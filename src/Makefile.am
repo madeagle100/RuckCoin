@@ -500,6 +500,7 @@ ravend_LDADD = \
   $(LIBSECP256K1)
 
 ravend_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
+ravend_LDADD += -L/home/ruck/ruckcoin-dev/deps/db-4.8.30.NC/lib -ldb_cxx-4.8
 
 # raven-cli binary #
 raven_cli_SOURCES = raven-cli.cpp
