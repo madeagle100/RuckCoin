@@ -1817,6 +1817,7 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
             "         \"vout\":n,                  (numeric, required) The output number\n"
             "         \"scriptPubKey\": \"hex\",   (string, required) script key\n"
             "         \"redeemScript\": \"hex\",   (string, required for P2SH or P2WSH) redeem script\n"
+            "         \"assetAuthPreimage\": \"hex\", (string, required for P2AH) pay-to-asset-hash preimage\n"
             "         \"amount\": value            (numeric, required) The amount spent\n"
             "       }\n"
             "       ,...\n"
@@ -1968,6 +1969,25 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
                     tempKeystore.AddCScript(redeemScript);
                 }
             }
+
+            /** RVN START */
+            // if assetAuthPreimage given for a P2AH (pay-to-asset-hash) input, add it to the
+            // tempKeystore so the input's scriptSig can be filled with the preimage push
+            if (scriptPubKey.IsAssetAuthScript()) {
+                UniValue v = find_value(prevOut, "assetAuthPreimage");
+                if (!v.isNull()) {
+                    std::vector<unsigned char> preimageData(ParseHexV(v, "assetAuthPreimage"));
+                    tempKeystore.AddAssetAuthPreimage(preimageData);
+#ifdef ENABLE_WALLET
+                    // When signing with the wallet, the preimage needs to be visible to the
+                    // wallet keystore as well (in-memory only; not persisted unless the user
+                    // calls addassetauthaddress)
+                    if (!fGivenKeys && pwallet)
+                        pwallet->LoadAssetAuthPreimage(preimageData);
+#endif
+                }
+            }
+            /** RVN END */
         }
     }
 

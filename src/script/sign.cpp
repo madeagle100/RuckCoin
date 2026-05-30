@@ -85,29 +85,19 @@ static bool SignStep(const BaseSignatureCreator& creator, const CScript& scriptP
         return false;
     /** RVN START */
     case TX_NEW_ASSET:
-        keyID = CKeyID(uint160(vSolutions[0]));
-        if (!Sign1(keyID, creator, scriptPubKey, ret, sigversion))
-            return false;
-        else
-        {
-            CPubKey vch;
-            creator.KeyStore().GetPubKey(keyID, vch);
-            ret.push_back(ToByteVector(vch));
-        }
-        return true;
     case TX_TRANSFER_ASSET:
-        keyID = CKeyID(uint160(vSolutions[0]));
-        if (!Sign1(keyID, creator, scriptPubKey, ret, sigversion))
-            return false;
-        else
-        {
-            CPubKey vch;
-            creator.KeyStore().GetPubKey(keyID, vch);
-            ret.push_back(ToByteVector(vch));
-        }
-        return true;
-
     case TX_REISSUE_ASSET:
+        // Asset data can be appended to a P2AH (pay-to-asset-hash) base script as well as a
+        // P2PKH base script. P2AH-based asset scripts are satisfied by the preimage, not a key
+        if (scriptPubKey.IsAssetAuthScript()) {
+            std::vector<unsigned char> vchPreimage;
+            if (creator.KeyStore().GetAssetAuthPreimage(uint160(vSolutions[0]), vchPreimage)) {
+                ret.push_back(vchPreimage);
+                return true;
+            }
+            return false;
+        }
+
         keyID = CKeyID(uint160(vSolutions[0]));
         if (!Sign1(keyID, creator, scriptPubKey, ret, sigversion))
             return false;
