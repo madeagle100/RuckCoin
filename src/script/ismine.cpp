@@ -193,6 +193,14 @@ isminetype IsMine(const CKeyStore &keystore, const CScript& scriptPubKey, bool& 
                 return ISMINE_SPENDABLE;
             break;
         }
+
+        case TX_ASSET_AUTH: {
+            // P2AH outputs are never ISMINE_SPENDABLE even if the wallet knows the
+            // preimage. They are not spendable by signatures, only by moving the
+            // committed owner assets, so they must never be selected as inputs by
+            // normal wallet coin selection. Wallets track them as watch-only.
+            break;
+        }
             /** RVN END*/
     }
 

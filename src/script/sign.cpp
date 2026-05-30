@@ -118,6 +118,18 @@ static bool SignStep(const BaseSignatureCreator& creator, const CScript& scriptP
             ret.push_back(ToByteVector(vch));
         }
         return true;
+
+    case TX_ASSET_AUTH: {
+        // Pay-to-asset-hash: the "signature" is the preimage that hashes to the
+        // committed value. The actual authorization (owner asset movement) is
+        // enforced by consensus, not by this script
+        std::vector<unsigned char> vchPreimage;
+        if (creator.KeyStore().GetAssetAuthPreimage(uint160(vSolutions[0]), vchPreimage)) {
+            ret.push_back(vchPreimage);
+            return true;
+        }
+        return false;
+    }
     /** RVN END */
     case TX_PUBKEY:
         keyID = CPubKey(vSolutions[0]).GetID();
@@ -426,6 +438,11 @@ static Stacks CombineSignatures(const CScript& scriptPubKey, const BaseSignature
         return sigs1;
     case TX_REISSUE_ASSET:
         // Signatures are bigger than placeholders or empty scripts:
+        if (sigs1.script.empty() || sigs1.script[0].empty())
+            return sigs2;
+        return sigs1;
+    case TX_ASSET_AUTH:
+        // Preimages are bigger than placeholders or empty scripts:
         if (sigs1.script.empty() || sigs1.script[0].empty())
             return sigs2;
         return sigs1;

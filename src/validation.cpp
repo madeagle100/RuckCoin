@@ -1611,6 +1611,21 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
             // correct (ie that the transaction hash which is in tx's prevouts
             // properly commits to the scriptPubKey in the inputs view of that
             // transaction).
+            /** RVN START - Pay-to-asset-hash (P2AH) */
+            // If this transaction spends any P2AH input, every signature in the transaction
+            // must commit to the whole transaction with SIGHASH_ALL. P2AH inputs carry no
+            // signature, so the transaction is only bound by the other inputs' signatures
+            if (AreAssetAuthDeployed()) {
+                for (unsigned int i = 0; i < tx.vin.size(); i++) {
+                    const Coin& coin = inputs.AccessCoin(tx.vin[i].prevout);
+                    if (!coin.IsSpent() && coin.out.scriptPubKey.IsAssetAuthScript()) {
+                        flags |= SCRIPT_VERIFY_REQUIRE_SIGHASH_ALL;
+                        break;
+                    }
+                }
+            }
+            /** RVN END */
+
             uint256 hashCacheEntry;
             // We only use the first 19 bytes of nonce to avoid a second SHA
             // round - giving us 19 + 32 + 4 = 55 bytes (+ 8 + 1 = 64)
@@ -5830,6 +5845,18 @@ bool AreTransferScriptsSizeDeployed() {
 bool AreRestrictedAssetsDeployed() {
 
     return IsRip5Active();
+}
+
+bool AreAssetAuthDeployed()
+{
+    if (fAssetAuthIsActive)
+        return true;
+
+    const ThresholdState thresholdState = VersionBitsTipState(GetParams().GetConsensus(), Consensus::DEPLOYMENT_P2AH);
+    if (thresholdState == THRESHOLD_ACTIVE)
+        fAssetAuthIsActive = true;
+
+    return fAssetAuthIsActive;
 }
 
 bool IsDGWActive(unsigned int nBlockNumber) {

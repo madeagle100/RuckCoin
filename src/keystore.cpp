@@ -65,6 +65,34 @@ bool CBasicKeyStore::GetCScript(const CScriptID &hash, CScript& redeemScriptOut)
     return false;
 }
 
+bool CBasicKeyStore::AddAssetAuthPreimage(const std::vector<unsigned char>& vchPreimage)
+{
+    if (vchPreimage.size() > MAX_SCRIPT_ELEMENT_SIZE)
+        return error("CBasicKeyStore::AddAssetAuthPreimage(): preimages > %i bytes are invalid", MAX_SCRIPT_ELEMENT_SIZE);
+
+    LOCK(cs_KeyStore);
+    mapAssetAuthPreimages[Hash160(vchPreimage)] = vchPreimage;
+    return true;
+}
+
+bool CBasicKeyStore::HaveAssetAuthPreimage(const uint160& hash) const
+{
+    LOCK(cs_KeyStore);
+    return mapAssetAuthPreimages.count(hash) > 0;
+}
+
+bool CBasicKeyStore::GetAssetAuthPreimage(const uint160& hash, std::vector<unsigned char>& vchPreimageOut) const
+{
+    LOCK(cs_KeyStore);
+    AssetAuthPreimageMap::const_iterator mi = mapAssetAuthPreimages.find(hash);
+    if (mi != mapAssetAuthPreimages.end())
+    {
+        vchPreimageOut = (*mi).second;
+        return true;
+    }
+    return false;
+}
+
 static bool ExtractPubKey(const CScript &dest, CPubKey& pubKeyOut)
 {
     //TODO: Use Solver to extract this?

@@ -161,6 +161,12 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_COINBASE_ASSETS].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_COINBASE_ASSETS].nOverrideRuleChangeActivationThreshold = 8;
         consensus.vDeployments[Consensus::DEPLOYMENT_COINBASE_ASSETS].nOverrideMinerConfirmationWindow = 10;
+        // P2AH (pay-to-asset-hash): same genesis-activation window as other RuckCoin asset deployments
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].bit = 11;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nStartTime = 0;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nTimeout = 999999999999ULL;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nOverrideRuleChangeActivationThreshold = 8;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nOverrideMinerConfirmationWindow = 10;
 
 
         // New RuckCoin chain: no inherited Ravencoin work or assume-valid blocks
@@ -215,6 +221,7 @@ public:
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,128);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
+        base58Prefixes[ASSET_AUTH_ADDRESS] = std::vector<unsigned char>(1,40); // P2AH addresses start with 'H'
 
         // RuckCoin BIP44 cointype (unofficial). Ravencoin used 175.
         nExtCoinType = 1776;
@@ -330,6 +337,12 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_COINBASE_ASSETS].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_COINBASE_ASSETS].nOverrideRuleChangeActivationThreshold = 1411; // Approx 70% of 2016
         consensus.vDeployments[Consensus::DEPLOYMENT_COINBASE_ASSETS].nOverrideMinerConfirmationWindow = 2016;
+        // P2AH (pay-to-asset-hash) deployment on testnet
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].bit = 11;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nStartTime = 0;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nTimeout = 999999999999ULL;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nOverrideRuleChangeActivationThreshold = 1411;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nOverrideMinerConfirmationWindow = 2016;
 
         consensus.nMinimumChainWork = uint256S("0x00");
         consensus.defaultAssumeValid = uint256S("0x00");
@@ -416,6 +429,7 @@ public:
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
+        base58Prefixes[ASSET_AUTH_ADDRESS] = std::vector<unsigned char>(1,43); // P2AH addresses start with 'J'
 
         // RuckCoin BIP44 cointype in testnet
         nExtCoinType = 1;
@@ -530,6 +544,12 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_COINBASE_ASSETS].nTimeout = 999999999999ULL;
         consensus.vDeployments[Consensus::DEPLOYMENT_COINBASE_ASSETS].nOverrideRuleChangeActivationThreshold = 400;
         consensus.vDeployments[Consensus::DEPLOYMENT_COINBASE_ASSETS].nOverrideMinerConfirmationWindow = 500;
+        // P2AH (pay-to-asset-hash) deployment on regtest - always available for signalling
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].bit = 11;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nStartTime = 0;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nTimeout = 999999999999ULL;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nOverrideRuleChangeActivationThreshold = 108;
+        consensus.vDeployments[Consensus::DEPLOYMENT_P2AH].nOverrideMinerConfirmationWindow = 144;
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork = uint256S("0x00");
@@ -631,6 +651,7 @@ public:
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,239);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
+        base58Prefixes[ASSET_AUTH_ADDRESS] = std::vector<unsigned char>(1,43); // P2AH addresses start with 'J'
 
         // Raven BIP44 cointype in regtest
         nExtCoinType = 1;

@@ -39,6 +39,7 @@ const char* GetTxnOutputType(txnouttype t)
     case TX_NEW_ASSET: return ASSET_NEW_STRING;
     case TX_TRANSFER_ASSET: return ASSET_TRANSFER_STRING;
     case TX_REISSUE_ASSET: return ASSET_REISSUE_STRING;
+    case TX_ASSET_AUTH: return "assetauth";
     /** RVN END */
     }
     return nullptr;
@@ -72,6 +73,16 @@ bool Solver(const CScript& scriptPubKey, txnouttype& typeRet, std::vector<std::v
         return true;
     }
     /** RVN START */
+    // Pay-to-asset-hash (P2AH): the bare 25 byte base script. P2AH scripts that carry
+    // appended asset transfer data are classified as asset scripts below so that all
+    // existing asset accounting works unchanged
+    if (scriptPubKey.IsPayToAssetAuthHash()) {
+        typeRet = TX_ASSET_AUTH;
+        std::vector<unsigned char> hashBytes(scriptPubKey.begin()+3, scriptPubKey.begin()+23);
+        vSolutionsRet.push_back(hashBytes);
+        return true;
+    }
+
     int nType = 0;
     bool fIsOwner = false;
     if (scriptPubKey.IsAssetScript(nType, fIsOwner)) {
@@ -234,8 +245,17 @@ bool ExtractDestination(const CScript& scriptPubKey, CTxDestination& addressRet)
         addressRet = CScriptID(uint160(vSolutions[0]));
         return true;
     /** RVN START */
+    } else if (whichType == TX_ASSET_AUTH) {
+        addressRet = CAssetAuthID(uint160(vSolutions[0]));
+        return true;
     } else if (whichType == TX_NEW_ASSET || whichType == TX_REISSUE_ASSET || whichType == TX_TRANSFER_ASSET) {
-        addressRet = CKeyID(uint160(vSolutions[0]));
+        // Asset data can be appended to either a P2PKH base script or a P2AH base script.
+        // Check the base script type so asset balances at P2AH addresses are tracked
+        // under the P2AH address
+        if (scriptPubKey.IsAssetAuthScript())
+            addressRet = CAssetAuthID(uint160(vSolutions[0]));
+        else
+            addressRet = CKeyID(uint160(vSolutions[0]));
         return true;
     } else if (whichType == TX_RESTRICTED_ASSET_DATA) {
         if (vSolutions.size()) {
@@ -313,6 +333,14 @@ public:
         *script << OP_HASH160 << ToByteVector(scriptID) << OP_EQUAL;
         return true;
     }
+
+    bool operator()(const CAssetAuthID &assetAuthID) const {
+        script->clear();
+        // Pay-to-asset-hash: same 25 byte layout as P2PKH so asset data can be appended,
+        // but ends in OP_EQUAL OP_NIP so the preimage push satisfies the script
+        *script << OP_DUP << OP_HASH160 << ToByteVector(assetAuthID) << OP_EQUAL << OP_NIP;
+        return true;
+    }
 };
 } // namespace
 
@@ -339,6 +367,12 @@ namespace
         bool operator()(const CScriptID &scriptID) const {
             script->clear();
             *script << OP_RVN_ASSET << ToByteVector(scriptID);
+            return true;
+        }
+
+        bool operator()(const CAssetAuthID &assetAuthID) const {
+            script->clear();
+            *script << OP_RVN_ASSET << ToByteVector(assetAuthID);
             return true;
         }
     };

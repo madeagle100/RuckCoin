@@ -164,6 +164,32 @@ public:
         }
         return obj;
     }
+
+    UniValue operator()(const CAssetAuthID &assetAuthID) const {
+        UniValue obj(UniValue::VOBJ);
+        obj.push_back(Pair("isscript", false));
+        obj.push_back(Pair("isassetauth", true));
+        if (pwallet) {
+            std::vector<unsigned char> vchPreimage;
+            if (pwallet->GetAssetAuthPreimage(assetAuthID, vchPreimage)) {
+                CAssetAuthPreimage preimage;
+                CDataStream ssPreimage(vchPreimage, SER_NETWORK, PROTOCOL_VERSION);
+                try {
+                    ssPreimage >> preimage;
+                } catch (const std::exception&) {
+                    return obj; // Stored preimage failed to deserialize; report nothing extra
+                }
+                obj.push_back(Pair("preimage", HexStr(vchPreimage)));
+                obj.push_back(Pair("sigsrequired", preimage.nRequired));
+                UniValue a(UniValue::VARR);
+                for (const std::string& name : preimage.vOwnerAssetNames) {
+                    a.push_back(name);
+                }
+                obj.push_back(Pair("owner_assets", a));
+            }
+        }
+        return obj;
+    }
 };
 #endif
 
