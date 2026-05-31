@@ -444,7 +444,8 @@ BOOST_FIXTURE_TEST_SUITE(assetauth_tests, BasicTestingSetup)
                 mutTx.vout.push_back(CTxOut(0, rootOutScript));
             }
 
-            CScript leafOutScript = MakeKeyScript();
+            // LEAF! returns to P2AH(ROOT!) so the chain can be spent again from the leaf P2AH
+            CScript leafOutScript = MakeP2AHScript(rootPreimage);
             leafTransfer.ConstructTransaction(leafOutScript);
             mutTx.vout.push_back(CTxOut(0, leafOutScript));
 

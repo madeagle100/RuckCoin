@@ -302,14 +302,13 @@ class AssetAuthTest(RavenTestFramework):
         assert_equal(float(n1.listmyassets("FUNDS")["FUNDS"]), 200.0)
 
     def test_chaining(self):
-        self.log.info("Testing chained P2AH authorization...")
-        n0 = self.nodes[0]
+        self.log.info("Testing chained P2AH authorization via spendassetauth...")
+        n0, n1 = self.nodes[0], self.nodes[1]
 
         # Setup:
         #   ROOT! at a key address (wallet)
         #   LEAF! held AT P2AH(ROOT!)
         #   5 RVN held at P2AH(LEAF!)
-        # Spending the RVN requires moving LEAF!, which requires moving ROOT!
         n0.issue("ROOT", 100)
         n0.issue("LEAF", 100)
         n0.generate(1)
@@ -323,65 +322,33 @@ class AssetAuthTest(RavenTestFramework):
         n0.generate(1)
         self.sync_all()
 
-        # Find the UTXOs
-        leaf_utxo = [u for u in n0.listassetauthutxos(p2ah_root['address'])
-                     if 'asset' in u and u['asset']['name'] == 'LEAF!'][0]
-        rvn_utxo = [u for u in n0.listassetauthutxos(p2ah_leaf['address'])
-                    if 'asset' not in u][0]
-        root_outpoint = n0.listmyassets("ROOT!", True)["ROOT!"]['outpoints'][0]
-        fee_unspent = get_first_unspent(n0, 10)
+        dest = n1.getnewaddress()
+        spend = n0.spendassetauth(p2ah_leaf['address'], {dest: 4.9})
+        assert_equal(spend['owner_assets_moved'], ["ROOT!", "LEAF!"])
 
-        # Build the chained transaction
-        dest = n0.getnewaddress()
-        root_dest = n0.getnewaddress()
-        leaf_dest = n0.getnewaddress()
-        change = n0.getnewaddress()
-        change_amount = truncate(float(fee_unspent['amount']) - 0.1)
+        moved = dict(zip(spend['owner_assets_moved'], spend['owner_asset_destinations']))
+        assert_not_equal(moved['ROOT!'], p2ah_root['address'])
+        assert_equal(moved['LEAF!'], p2ah_root['address'])
 
-        inputs = [
-            {'txid': root_outpoint['txid'], 'vout': root_outpoint['vout']},  # ROOT! (key-signed)
-            {'txid': leaf_utxo['txid'], 'vout': leaf_utxo['vout']},          # LEAF! at P2AH(ROOT!)
-            {'txid': rvn_utxo['txid'], 'vout': rvn_utxo['vout']},            # RVN at P2AH(LEAF!)
-            {'txid': fee_unspent['txid'], 'vout': fee_unspent['vout']},      # fee
-        ]
-        outputs = {
-            dest: 4.9,
-            root_dest: {'transfer': {'ROOT!': 1}},
-            leaf_dest: {'transfer': {'LEAF!': 1}},
-            change: change_amount,
-        }
-        rawtx = n0.createrawtransaction(inputs, outputs)
-
-        # Sign with both preimages
-        leaf_spk = n0.getrawtransaction(leaf_utxo['txid'], 1)['vout'][leaf_utxo['vout']]['scriptPubKey']['hex']
-        rvn_spk = n0.getrawtransaction(rvn_utxo['txid'], 1)['vout'][rvn_utxo['vout']]['scriptPubKey']['hex']
-        prevtxs = [
-            {'txid': leaf_utxo['txid'], 'vout': leaf_utxo['vout'], 'scriptPubKey': leaf_spk,
-             'assetAuthPreimage': p2ah_root['preimage'], 'amount': 0},
-            {'txid': rvn_utxo['txid'], 'vout': rvn_utxo['vout'], 'scriptPubKey': rvn_spk,
-             'assetAuthPreimage': p2ah_leaf['preimage'], 'amount': 5.0},
-        ]
-        signed = n0.signrawtransaction(rawtx, prevtxs)
-        assert_equal(signed['complete'], True)
-
-        # Verify reports both P2AH inputs authorized through the chain
-        verify = n0.verifyassetauth(signed['hex'])
+        verify = n0.verifyassetauth(n0.getrawtransaction(spend['txid']))
         assert_equal(verify['valid'], True)
         for inp in verify['inputs']:
             assert_equal(inp['authorized'], True)
 
-        # Broadcast succeeds
-        txid = n0.sendrawtransaction(signed['hex'])
         n0.generate(1)
         self.sync_all()
-        assert_equal(n0.getrawtransaction(txid, 1)['confirmations'], 1)
+        assert_equal(float(n1.getreceivedbyaddress(dest)), 4.9)
+
+        # LEAF! is back on P2AH(ROOT!) for another chained spend
+        leaf_utxos = [u for u in n0.listassetauthutxos(p2ah_root['address'])
+                      if 'asset' in u and u['asset']['name'] == 'LEAF!']
+        assert_equal(len(leaf_utxos), 1)
 
     def test_chain_without_root_rejected(self):
         self.log.info("Testing that a chain without its authorization root is rejected...")
         n0 = self.nodes[0]
 
-        # LEAF! is now back at a key address (moved there by the chain test).
-        # Put it back at P2AH(ROOT!), then try to move it WITHOUT moving ROOT!
+        # LEAF! is on P2AH(ROOT!) after the chain test. Try to move it WITHOUT moving ROOT!
         p2ah_root = n0.getassetauthinfo(n0.createassetauthaddress(1, ["ROOT!"])['preimage'])
 
         n0.transfer("LEAF!", 1, p2ah_root['address'])

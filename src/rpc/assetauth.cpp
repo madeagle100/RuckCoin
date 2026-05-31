@@ -31,6 +31,8 @@
 #include "wallet/rpcwallet.h"
 #endif
 
+#include <set>
+
 #include <univalue.h>
 
 std::string AssetAuthActivationWarning()
@@ -571,6 +573,161 @@ UniValue listassetauthutxos(const JSONRPCRequest& request)
     return results;
 }
 
+#ifdef ENABLE_WALLET
+
+/** UTXO held at a watched P2AH address */
+struct P2AHUtxo {
+    COutPoint outpoint;
+    CTxOut txout;
+    std::string assetName; // empty if RVN-only
+    CAmount assetAmount;
+};
+
+/** Key-held owner asset used as an authorization root */
+struct AuthKeyInput {
+    std::string assetName;
+    COutput output;
+};
+
+/** Watched P2AH input spent to authorize a chained spend; owner token returns to this P2AH */
+struct AuthP2AHInput {
+    COutPoint outpoint;
+    CAssetAuthPreimage preimage;
+    CTxDestination p2ahDest;
+    std::string assetReturned; // owner asset held at this P2AH that must move back
+};
+
+/** Find a watched P2AH UTXO holding the given owner asset (wallet must know the preimage) */
+static bool FindOwnerAssetAtP2AH(CWallet* pwallet, const std::string& ownerName,
+    const std::set<COutPoint>& usedOutpoints, COutPoint& outpointOut, CAssetAuthPreimage& preimageOut,
+    CTxDestination& p2ahDestOut)
+{
+    for (const auto& entry : pwallet->mapWallet) {
+        const CWalletTx& wtx = entry.second;
+        if (wtx.IsCoinBase() && wtx.GetBlocksToMaturity() > 0)
+            continue;
+        if (wtx.GetDepthInMainChain() < 0)
+            continue;
+
+        for (unsigned int i = 0; i < wtx.tx->vout.size(); i++) {
+            if (pwallet->IsSpent(entry.first, i))
+                continue;
+
+            const CTxOut& txout = wtx.tx->vout[i];
+            if (!txout.scriptPubKey.IsAssetScript())
+                continue;
+
+            std::string strName;
+            CAmount nAmount;
+            if (!GetAssetInfoFromScript(txout.scriptPubKey, strName, nAmount))
+                continue;
+            if (!IsAssetNameAnOwner(strName) || strName != ownerName)
+                continue;
+
+            CTxDestination outDest;
+            if (!ExtractDestination(txout.scriptPubKey, outDest))
+                continue;
+            const CAssetAuthID* outID = boost::get<CAssetAuthID>(&outDest);
+            if (!outID)
+                continue;
+
+            std::vector<unsigned char> vchPreimage;
+            if (!pwallet->GetAssetAuthPreimage(*outID, vchPreimage))
+                continue;
+
+            CAssetAuthPreimage candidate;
+            CDataStream ssPreimage(vchPreimage, SER_NETWORK, PROTOCOL_VERSION);
+            try {
+                ssPreimage >> candidate;
+            } catch (const std::exception&) {
+                continue;
+            }
+            std::string strPreimageError;
+            if (!candidate.IsValid(strPreimageError))
+                continue;
+
+            COutPoint outpoint(entry.first, i);
+            if (usedOutpoints.count(outpoint))
+                continue;
+
+            outpointOut = outpoint;
+            preimageOut = candidate;
+            p2ahDestOut = outDest;
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Select inputs that satisfy a P2AH preimage's authorization requirement.
+ * Owner tokens on a parent P2AH are preferred (chained auth); those tokens are
+ * returned to that parent P2AH in outputs. Key-held roots move to fresh addresses.
+ */
+static bool ResolveAssetAuth(CWallet* pwallet,
+    const std::map<std::string, std::vector<COutput> >& mapAssetCoins,
+    const CAssetAuthPreimage& preimage, std::vector<AuthKeyInput>& keyInputs,
+    std::vector<AuthP2AHInput>& p2ahInputs, std::set<COutPoint>& usedP2AH,
+    std::set<std::pair<uint256, unsigned int> >& usedKey)
+{
+    int nFound = 0;
+    for (const std::string& ownerName : preimage.vOwnerAssetNames) {
+        if (nFound >= preimage.nRequired)
+            break;
+
+        bool satisfied = false;
+
+        COutPoint p2ahOutpoint;
+        CAssetAuthPreimage parentPreimage;
+        CTxDestination parentDest;
+        if (FindOwnerAssetAtP2AH(pwallet, ownerName, usedP2AH, p2ahOutpoint, parentPreimage, parentDest)) {
+            std::vector<AuthKeyInput> subKeys;
+            std::vector<AuthP2AHInput> subP2ah;
+            if (ResolveAssetAuth(pwallet, mapAssetCoins, parentPreimage, subKeys, subP2ah, usedP2AH, usedKey)) {
+                for (const auto& k : subKeys) {
+                    auto id = std::make_pair(k.output.tx->GetHash(), k.output.i);
+                    if (usedKey.insert(id).second)
+                        keyInputs.push_back(k);
+                }
+                for (const auto& p : subP2ah) {
+                    if (usedP2AH.insert(p.outpoint).second)
+                        p2ahInputs.push_back(p);
+                }
+                AuthP2AHInput link;
+                link.outpoint = p2ahOutpoint;
+                link.preimage = parentPreimage;
+                link.p2ahDest = parentDest;
+                link.assetReturned = ownerName;
+                if (usedP2AH.insert(p2ahOutpoint).second)
+                    p2ahInputs.push_back(link);
+                nFound++;
+                satisfied = true;
+            }
+        }
+
+        if (!satisfied) {
+            auto it = mapAssetCoins.find(ownerName);
+            if (it != mapAssetCoins.end()) {
+                for (const COutput& out : it->second) {
+                    auto id = std::make_pair(out.tx->GetHash(), out.i);
+                    if (!usedKey.insert(id).second)
+                        continue;
+                    keyInputs.push_back({ownerName, out});
+                    nFound++;
+                    satisfied = true;
+                    break;
+                }
+            }
+        }
+
+        if (!satisfied)
+            return false;
+    }
+    return nFound >= preimage.nRequired;
+}
+
+#endif // ENABLE_WALLET
+
 UniValue spendassetauth(const JSONRPCRequest& request)
 {
     CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
@@ -583,9 +740,11 @@ UniValue spendassetauth(const JSONRPCRequest& request)
             "spendassetauth \"from_address\" outputs ( \"preimage\" \"change_address\" )\n"
             + AssetAuthActivationWarning() +
             "\nSpends UTXOs held at a P2AH (pay-to-asset-hash) address.\n"
-            "\nThe wallet automatically selects the owner asset UTXO(s) needed to authorize the spend and\n"
-            "moves them to fresh addresses in the same transaction. The wallet must hold at least nrequired\n"
-            "of the owner assets that the P2AH address commits to.\n"
+            "\nThe wallet automatically selects the owner asset UTXO(s) needed to authorize the spend.\n"
+            "Key-held authorization roots are moved to fresh addresses. When an owner token is held at a\n"
+            "parent P2AH address (chained authorization), that parent P2AH input is spent and the token is\n"
+            "returned to the same parent P2AH address. The wallet must hold at least nrequired of the owner\n"
+            "assets (or be able to reach them through a watched P2AH chain).\n"
 
             "\nArguments:\n"
             "1. \"from_address\"     (string, required) The P2AH address to spend from\n"
@@ -602,7 +761,7 @@ UniValue spendassetauth(const JSONRPCRequest& request)
             "{\n"
             "  \"txid\": \"id\",                      (string) The transaction id\n"
             "  \"owner_assets_moved\": [...],       (array) The owner assets used to authorize the spend\n"
-            "  \"owner_asset_destinations\": [...], (array) The fresh addresses the owner assets were moved to\n"
+            "  \"owner_asset_destinations\": [...], (array) Where each moved owner asset was sent (fresh key or parent P2AH)\n"
             "  \"fee\": x.xxx                       (numeric) The transaction fee\n"
             "}\n"
 
@@ -704,44 +863,25 @@ UniValue spendassetauth(const JSONRPCRequest& request)
     if (vDestOuts.empty())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "No outputs specified");
 
-    // ---- Select the owner asset UTXOs needed for authorization ----
+    // ---- Resolve authorization inputs (key roots and/or parent P2AH chain) ----
     std::map<std::string, std::vector<COutput> > mapAssetCoins;
     pwallet->AvailableAssets(mapAssetCoins, true, nullptr);
 
-    std::vector<std::pair<std::string, COutput> > vOwnerInputs; // (owner asset name, utxo)
-    std::vector<std::string> vHave;
-    for (const std::string& ownerName : preimage.vOwnerAssetNames) {
-        if ((int)vOwnerInputs.size() >= preimage.nRequired)
-            break;
-        auto it = mapAssetCoins.find(ownerName);
-        if (it != mapAssetCoins.end() && !it->second.empty()) {
-            vOwnerInputs.push_back(std::make_pair(ownerName, it->second[0]));
-            vHave.push_back(ownerName);
-        }
-    }
-
-    if ((int)vOwnerInputs.size() < preimage.nRequired) {
+    std::vector<AuthKeyInput> vKeyAuthInputs;
+    std::vector<AuthP2AHInput> vP2AHAuthInputs;
+    std::set<COutPoint> usedP2AHAuth;
+    std::set<std::pair<uint256, unsigned int> > usedKeyAuth;
+    if (!ResolveAssetAuth(pwallet, mapAssetCoins, preimage, vKeyAuthInputs, vP2AHAuthInputs,
+                          usedP2AHAuth, usedKeyAuth)) {
         std::string strNeed;
         for (const auto& name : preimage.vOwnerAssetNames)
             strNeed += (strNeed.empty() ? "" : ", ") + name;
-        std::string strHave;
-        for (const auto& name : vHave)
-            strHave += (strHave.empty() ? "" : ", ") + name;
-        if (strHave.empty())
-            strHave = "none";
         throw JSONRPCError(RPC_WALLET_ERROR,
-            strprintf("Wallet does not hold enough of the required owner assets. Need %d of [%s], have: %s",
-                preimage.nRequired, strNeed, strHave));
+            strprintf("Wallet cannot authorize this spend. Need %d of [%s] from keys or a watched P2AH chain",
+                preimage.nRequired, strNeed));
     }
 
     // ---- Collect P2AH UTXOs at the from address ----
-    struct P2AHUtxo {
-        COutPoint outpoint;
-        CTxOut txout;
-        std::string assetName; // empty if RVN-only
-        CAmount assetAmount;
-    };
-
     std::vector<P2AHUtxo> vP2AHRvn;
     std::vector<P2AHUtxo> vP2AHAssets;
 
@@ -786,14 +926,9 @@ UniValue spendassetauth(const JSONRPCRequest& request)
     if (vP2AHRvn.empty() && vP2AHAssets.empty())
         throw JSONRPCError(RPC_WALLET_ERROR, "No spendable UTXOs found at the P2AH address (is the address being watched? use addassetauthaddress)");
 
-    // ---- Build the transaction ----
-    CMutableTransaction mtx;
+    // ---- Select UTXOs at the from address (inputs added after authorization inputs) ----
+    std::vector<P2AHUtxo> vTargetP2AHInputs;
 
-    // Track totals
-    CAmount nRvnIn = 0;
-    std::map<std::string, CAmount> mapAssetsIn;
-
-    // Select asset-bearing P2AH UTXOs to cover requested asset outputs
     for (const auto& assetOut : mapAssetsOut) {
         CAmount nNeeded = assetOut.second;
         CAmount nGathered = 0;
@@ -802,10 +937,8 @@ UniValue spendassetauth(const JSONRPCRequest& request)
                 continue;
             if (nGathered >= nNeeded)
                 break;
-            mtx.vin.push_back(CTxIn(utxo.outpoint));
+            vTargetP2AHInputs.push_back(utxo);
             nGathered += utxo.assetAmount;
-            mapAssetsIn[utxo.assetName] += utxo.assetAmount;
-            nRvnIn += utxo.txout.nValue;
         }
         if (nGathered < nNeeded)
             throw JSONRPCError(RPC_WALLET_ERROR,
@@ -813,30 +946,50 @@ UniValue spendassetauth(const JSONRPCRequest& request)
                     assetOut.first, FormatMoney(nNeeded), FormatMoney(nGathered)));
     }
 
-    // Select RVN-bearing P2AH UTXOs (largest first) to cover RVN outputs + estimated fee
     std::sort(vP2AHRvn.begin(), vP2AHRvn.end(),
         [](const P2AHUtxo& a, const P2AHUtxo& b) { return a.txout.nValue > b.txout.nValue; });
 
-    // Rough fee estimate: P2AH inputs are large because of the preimage push. Use a generous estimate
-    // and adjust the change output after sizing
-    CAmount nFeeEstimate = 10000 * (1 + (int)vDestOuts.size() + (int)preimage.nRequired); // refined below
+    CAmount nRvnFromTarget = 0;
+    for (const auto& utxo : vP2AHAssets)
+        nRvnFromTarget += utxo.txout.nValue;
+
+    const int nP2AHInputsEstimate = 1 + (int)vP2AHAuthInputs.size() + (int)vTargetP2AHInputs.size();
+    CAmount nFeeEstimate = 10000 * (1 + (int)vDestOuts.size() + nP2AHInputsEstimate + (int)vKeyAuthInputs.size());
 
     size_t nRvnUtxoIdx = 0;
-    while (nRvnIn < nTotalRvnOut + nFeeEstimate && nRvnUtxoIdx < vP2AHRvn.size()) {
-        const auto& utxo = vP2AHRvn[nRvnUtxoIdx++];
+    while (nRvnFromTarget < nTotalRvnOut + nFeeEstimate && nRvnUtxoIdx < vP2AHRvn.size()) {
+        nRvnFromTarget += vP2AHRvn[nRvnUtxoIdx].txout.nValue;
+        vTargetP2AHInputs.push_back(vP2AHRvn[nRvnUtxoIdx]);
+        nRvnUtxoIdx++;
+    }
+
+    // ---- Build the transaction ----
+    CMutableTransaction mtx;
+    CAmount nRvnIn = 0;
+    std::map<std::string, CAmount> mapAssetsIn;
+    std::set<std::string> setAuthAssetsMoved;
+
+    for (const auto& keyIn : vKeyAuthInputs) {
+        mtx.vin.push_back(CTxIn(COutPoint(keyIn.output.tx->GetHash(), keyIn.output.i)));
+        mapAssetsIn[keyIn.assetName] += OWNER_ASSET_AMOUNT;
+        setAuthAssetsMoved.insert(keyIn.assetName);
+    }
+
+    for (const auto& p2ahIn : vP2AHAuthInputs) {
+        mtx.vin.push_back(CTxIn(p2ahIn.outpoint));
+        if (!p2ahIn.assetReturned.empty()) {
+            mapAssetsIn[p2ahIn.assetReturned] += OWNER_ASSET_AMOUNT;
+            setAuthAssetsMoved.insert(p2ahIn.assetReturned);
+        }
+    }
+
+    for (const auto& utxo : vTargetP2AHInputs) {
         mtx.vin.push_back(CTxIn(utxo.outpoint));
         nRvnIn += utxo.txout.nValue;
+        if (!utxo.assetName.empty())
+            mapAssetsIn[utxo.assetName] += utxo.assetAmount;
     }
 
-    // Add the owner asset inputs (authorization)
-    for (const auto& ownerInput : vOwnerInputs) {
-        const COutput& out = ownerInput.second;
-        mtx.vin.push_back(CTxIn(COutPoint(out.tx->GetHash(), out.i)));
-        // Owner asset coins carry no RVN value but track the asset
-        mapAssetsIn[ownerInput.first] += OWNER_ASSET_AMOUNT;
-    }
-
-    // If P2AH RVN isn't enough to cover outputs+fee, add wallet RVN coins
     if (nRvnIn < nTotalRvnOut + nFeeEstimate) {
         std::vector<COutput> vAvailableCoins;
         pwallet->AvailableCoins(vAvailableCoins, true, nullptr);
@@ -845,7 +998,6 @@ UniValue spendassetauth(const JSONRPCRequest& request)
                 break;
             if (!out.fSpendable)
                 continue;
-            // Skip asset outputs
             if (out.tx->tx->vout[out.i].scriptPubKey.IsAssetScript())
                 continue;
             mtx.vin.push_back(CTxIn(COutPoint(out.tx->GetHash(), out.i)));
@@ -861,35 +1013,39 @@ UniValue spendassetauth(const JSONRPCRequest& request)
     for (const auto& out : vDestOuts)
         mtx.vout.push_back(out);
 
-    // 2. Owner assets move to fresh addresses (replay hygiene: each authorization moves the
-    //    owner token to a brand new address)
+    // 2. Authorization roots move to fresh keys; chained tokens return to their parent P2AH
     UniValue ownerDestinations(UniValue::VARR);
     UniValue ownerAssetsMoved(UniValue::VARR);
-    for (const auto& ownerInput : vOwnerInputs) {
+    for (const auto& keyIn : vKeyAuthInputs) {
         CPubKey newKey;
         if (!pwallet->GetKeyFromPool(newKey))
             throw JSONRPCError(RPC_WALLET_KEYPOOL_RAN_OUT, "Keypool ran out, please call keypoolrefill first");
 
         CScript ownerScript = GetScriptForDestination(newKey.GetID());
-        CAssetTransfer ownerTransfer(ownerInput.first, OWNER_ASSET_AMOUNT);
+        CAssetTransfer ownerTransfer(keyIn.assetName, OWNER_ASSET_AMOUNT);
         ownerTransfer.ConstructTransaction(ownerScript);
         mtx.vout.push_back(CTxOut(0, ownerScript));
 
-        ownerAssetsMoved.push_back(ownerInput.first);
+        ownerAssetsMoved.push_back(keyIn.assetName);
         ownerDestinations.push_back(EncodeDestination(newKey.GetID()));
+    }
+
+    for (const auto& p2ahIn : vP2AHAuthInputs) {
+        if (p2ahIn.assetReturned.empty())
+            continue;
+
+        CScript ownerScript = GetScriptForDestination(p2ahIn.p2ahDest);
+        CAssetTransfer ownerTransfer(p2ahIn.assetReturned, OWNER_ASSET_AMOUNT);
+        ownerTransfer.ConstructTransaction(ownerScript);
+        mtx.vout.push_back(CTxOut(0, ownerScript));
+
+        ownerAssetsMoved.push_back(p2ahIn.assetReturned);
+        ownerDestinations.push_back(EncodeDestination(p2ahIn.p2ahDest));
     }
 
     // 3. Asset change (back to the P2AH address or the change address)
     for (const auto& assetIn : mapAssetsIn) {
-        // Skip owner assets used for authorization; they were already sent to fresh addresses
-        bool fIsAuthAsset = false;
-        for (const auto& ownerInput : vOwnerInputs) {
-            if (ownerInput.first == assetIn.first) {
-                fIsAuthAsset = true;
-                break;
-            }
-        }
-        if (fIsAuthAsset)
+        if (setAuthAssetsMoved.count(assetIn.first))
             continue;
 
         CAmount nChange = assetIn.second - (mapAssetsOut.count(assetIn.first) ? mapAssetsOut.at(assetIn.first) : 0);
