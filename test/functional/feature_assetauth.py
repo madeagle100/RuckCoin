@@ -327,7 +327,7 @@ class AssetAuthTest(RavenTestFramework):
         assert_equal(spend['owner_assets_moved'], ["ROOT!", "LEAF!"])
 
         moved = dict(zip(spend['owner_assets_moved'], spend['owner_asset_destinations']))
-        assert_not_equal(moved['ROOT!'], p2ah_root['address'])
+        assert moved['ROOT!'] != p2ah_root['address']
         assert_equal(moved['LEAF!'], p2ah_root['address'])
 
         verify = n0.verifyassetauth(n0.getrawtransaction(spend['txid']))
@@ -350,10 +350,6 @@ class AssetAuthTest(RavenTestFramework):
 
         # LEAF! is on P2AH(ROOT!) after the chain test. Try to move it WITHOUT moving ROOT!
         p2ah_root = n0.getassetauthinfo(n0.createassetauthaddress(1, ["ROOT!"])['preimage'])
-
-        n0.transfer("LEAF!", 1, p2ah_root['address'])
-        n0.generate(1)
-        self.sync_all()
 
         leaf_utxo = [u for u in n0.listassetauthutxos(p2ah_root['address'])
                      if 'asset' in u and u['asset']['name'] == 'LEAF!'][0]

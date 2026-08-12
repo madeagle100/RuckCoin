@@ -684,15 +684,8 @@ static bool ResolveAssetAuth(CWallet* pwallet,
             std::vector<AuthKeyInput> subKeys;
             std::vector<AuthP2AHInput> subP2ah;
             if (ResolveAssetAuth(pwallet, mapAssetCoins, parentPreimage, subKeys, subP2ah, usedP2AH, usedKey)) {
-                for (const auto& k : subKeys) {
-                    auto id = std::make_pair(k.output.tx->GetHash(), k.output.i);
-                    if (usedKey.insert(id).second)
-                        keyInputs.push_back(k);
-                }
-                for (const auto& p : subP2ah) {
-                    if (usedP2AH.insert(p.outpoint).second)
-                        p2ahInputs.push_back(p);
-                }
+                keyInputs.insert(keyInputs.end(), subKeys.begin(), subKeys.end());
+                p2ahInputs.insert(p2ahInputs.end(), subP2ah.begin(), subP2ah.end());
                 AuthP2AHInput link;
                 link.outpoint = p2ahOutpoint;
                 link.preimage = parentPreimage;
