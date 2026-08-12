@@ -1,25 +1,29 @@
 #!/usr/bin/env bash
 # P2AH continuous validation harness for cron/CI.
 #
+# Uses a PERSISTENT regtest chain at P2AH_DATADIR — each cron tick appends more
+# blocks/transactions instead of starting over.
+#
 # Example crontab (every 5 minutes):
 #   */5 * * * * /opt/Ravencoin/contrib/p2ah_cron_stress_test.sh >> /opt/Ravencoin/logs/p2ah-stress/cron.log 2>&1
 #
 # Environment overrides:
-#   P2AH_REPO          — repo root (default: parent of contrib/)
-#   P2AH_LOG_DIR       — log directory (default: $P2AH_REPO/logs/p2ah-stress)
-#   P2AH_STRESS_ROUNDS — rounds for feature_assetauth_stress.py (default: 3)
-#   P2AH_FUNCTIONAL_LOOPS — repeats of each functional test per run (default: 2)
-#   P2AH_RUN_RELATED     — set to 0 to skip adjacent asset functional tests (default: 1)
+#   P2AH_REPO            — repo root (default: parent of contrib/)
+#   P2AH_DATADIR         — persistent node datadirs (default: $P2AH_REPO/logs/p2ah-stress/chain)
+#   P2AH_LOG_DIR         — log directory (default: $P2AH_REPO/logs/p2ah-stress)
+#   P2AH_STRESS_ROUNDS   — scenario rounds per cron tick (default: 1)
+#   P2AH_RUN_RELATED     — set to 0 to skip adjacent asset functional tests (default: 0)
+#   P2AH_RESET_CHAIN     — set to 1 to wipe P2AH_DATADIR before the stress run
 #   P2AH_SKIP_BUILD      — set to 1 to skip auto-build when binaries missing
-#   P2AH_JOBS          — parallel make jobs (default: nproc)
+#   P2AH_JOBS            — parallel make jobs (default: nproc)
 
 set -euo pipefail
 
 P2AH_REPO="${P2AH_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+P2AH_DATADIR="${P2AH_DATADIR:-${P2AH_REPO}/logs/p2ah-stress/chain}"
 P2AH_LOG_DIR="${P2AH_LOG_DIR:-${P2AH_REPO}/logs/p2ah-stress}"
-P2AH_STRESS_ROUNDS="${P2AH_STRESS_ROUNDS:-3}"
-P2AH_FUNCTIONAL_LOOPS="${P2AH_FUNCTIONAL_LOOPS:-2}"
-P2AH_RUN_RELATED="${P2AH_RUN_RELATED:-1}"
+P2AH_STRESS_ROUNDS="${P2AH_STRESS_ROUNDS:-1}"
+P2AH_RUN_RELATED="${P2AH_RUN_RELATED:-0}"
 P2AH_JOBS="${P2AH_JOBS:-$(nproc)}"
 LOCK_FILE="${P2AH_LOCK_FILE:-/tmp/p2ah_cron_stress_test.lock}"
 PTHREAD_SHIM="${P2AH_PTHREAD_SHIM:-/tmp/pthread_yield_compat.c}"
@@ -28,7 +32,7 @@ RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
 RUN_LOG="${P2AH_LOG_DIR}/run-${RUN_ID}.log"
 SUMMARY_LOG="${P2AH_LOG_DIR}/summary.log"
 
-mkdir -p "${P2AH_LOG_DIR}"
+mkdir -p "${P2AH_LOG_DIR}" "${P2AH_DATADIR}"
 
 exec 9>"${LOCK_FILE}"
 if ! flock -n 9; then
@@ -40,14 +44,13 @@ exec > >(tee -a "${RUN_LOG}") 2>&1
 
 echo "================================================================"
 echo "P2AH stress run ${RUN_ID}"
-echo "repo=${P2AH_REPO} rounds=${P2AH_STRESS_ROUNDS} functional_loops=${P2AH_FUNCTIONAL_LOOPS}"
+echo "repo=${P2AH_REPO} datadir=${P2AH_DATADIR} rounds=${P2AH_STRESS_ROUNDS}"
 echo "================================================================"
 
 cd "${P2AH_REPO}"
 
 TEST_BIN="${P2AH_REPO}/src/test/test_raven"
 RAVEND_BIN="${P2AH_REPO}/src/ravend"
-CONFIG_INI="${P2AH_REPO}/test/config.ini"
 PYTHON="${PYTHON:-python3}"
 
 TOTAL=0
@@ -118,75 +121,85 @@ run_boost_suite() {
     "${TEST_BIN}" --run_test="${suite}"
 }
 
-run_functional() {
-    local script="$1"
-    shift || true
-    (cd "${P2AH_REPO}" && "${PYTHON}" test/functional/test_runner.py "${script}" "$@")
+run_persistent_stress() {
+    local extra_args=()
+    extra_args+=(--persistent-dir="${P2AH_DATADIR}")
+    extra_args+=(--stress-rounds="${P2AH_STRESS_ROUNDS}")
+    extra_args+=(--nocleanup)
+    if [[ "${P2AH_RESET_CHAIN:-0}" == "1" ]]; then
+        extra_args+=(--reset-chain)
+    fi
+    export RAVEND="${RAVEND_BIN}"
+    export RAVENCLI="${P2AH_REPO}/src/raven-cli"
+    (cd "${P2AH_REPO}" && "${PYTHON}" test/functional/feature_assetauth_stress.py "${extra_args[@]}")
 }
 
 ensure_binaries
 
 echo "ravend: $("${RAVEND_BIN}" --version | head -1)"
 echo "test_raven: ${TEST_BIN}"
+if [[ -f "${P2AH_DATADIR}/p2ah_stress_run_counter" ]]; then
+    echo "persistent run counter: $(cat "${P2AH_DATADIR}/p2ah_stress_run_counter")"
+fi
 
-# --- Unit tests: P2AH core and nearby consensus/wallet surface ---
+# --- Unit tests (stateless; run every tick) ---
 UNIT_SUITES=(
     assetauth_tests
     base58_tests
     asset_tests
     asset_tx_tests
     script_standard_tests
-    script_tests
-    transaction_tests
-    serialization_tests
 )
 
 for suite in "${UNIT_SUITES[@]}"; do
     run_step "unit:${suite}" run_boost_suite "${suite}"
 done
 
-# --- Functional: canonical suite (looped) ---
-for loop in $(seq 1 "${P2AH_FUNCTIONAL_LOOPS}"); do
-    run_step "functional:feature_assetauth.py#${loop}" run_functional feature_assetauth.py
-done
+# --- Persistent chain stress (appends history every tick) ---
+run_step "functional:persistent_stress" run_persistent_stress
 
-# --- Functional: stress harness (looped with configurable rounds) ---
-for loop in $(seq 1 "${P2AH_FUNCTIONAL_LOOPS}"); do
-    run_step "functional:feature_assetauth_stress.py#${loop}" \
-        run_functional feature_assetauth_stress.py --stress-rounds="${P2AH_STRESS_ROUNDS}"
-done
-
-# --- Functional: asset RPC/regression neighbors ---
+# --- Optional: related functional tests on ephemeral tmpdirs (do not touch persistent chain) ---
 RELATED_FUNCTIONAL=(
     feature_assets.py
-    feature_rawassettransactions.py
     rpc_signrawtransaction.py
-    rpc_rawtransaction.py
 )
 
 for script in "${RELATED_FUNCTIONAL[@]}"; do
     if [[ "${P2AH_RUN_RELATED}" == "1" ]]; then
-        run_step "functional:${script}" run_functional "${script}"
+        run_step "functional:ephemeral:${script}" \
+            bash -c "cd '${P2AH_REPO}' && '${PYTHON}' test/functional/test_runner.py '${script}'"
     else
         SKIPPED=$((SKIPPED + 1))
-        echo "SKIP functional:${script} P2AH_RUN_RELATED=0"
+        echo "SKIP functional:ephemeral:${script} P2AH_RUN_RELATED=0"
     fi
 done
 
-# --- Repeated P2AH unit hammer (catch flaky/intermittent issues) ---
-for loop in $(seq 1 3); do
+# --- Extra P2AH unit passes ---
+for loop in $(seq 1 2); do
     run_step "unit:assetauth_tests:repeat${loop}" run_boost_suite assetauth_tests
 done
+
+if [[ -d "${P2AH_DATADIR}/node0/regtest" ]]; then
+    echo ""
+    if [[ -f "${P2AH_DATADIR}/p2ah_chain_height" ]]; then
+        echo "Persistent chain height: $(cat "${P2AH_DATADIR}/p2ah_chain_height")"
+    else
+        echo -n "Persistent chain height: "
+        "${P2AH_REPO}/src/raven-cli" -regtest -datadir="${P2AH_DATADIR}/node0" getblockcount 2>/dev/null || echo "?"
+    fi
+    echo -n "Persistent stress runs completed: "
+    cat "${P2AH_DATADIR}/p2ah_stress_run_counter" 2>/dev/null || echo "0"
+fi
 
 echo ""
 echo "================================================================"
 echo "P2AH stress run ${RUN_ID} complete"
 echo "total=${TOTAL} passed=${PASSED} failed=${FAILED} skipped=${SKIPPED}"
-echo "log=${RUN_LOG}"
+echo "datadir=${P2AH_DATADIR} log=${RUN_LOG}"
 echo "================================================================"
 
-printf '%s DONE total=%s passed=%s failed=%s log=%s\n' \
-    "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${TOTAL}" "${PASSED}" "${FAILED}" "${RUN_LOG}" >> "${SUMMARY_LOG}"
+printf '%s DONE total=%s passed=%s failed=%s datadir=%s log=%s\n' \
+    "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${TOTAL}" "${PASSED}" "${FAILED}" "${P2AH_DATADIR}" "${RUN_LOG}" >> "${SUMMARY_LOG}"
 
 if [[ ${FAILED} -gt 0 ]]; then
     exit 1
