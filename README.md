@@ -4,6 +4,8 @@ RuckCoin is a mineable, asset-capable cryptocurrency forked from [Ravencoin](htt
 
 This tree is based on current Ravencoin Core (`master` as of 2026-08) and rebranded as an independent network. It is **not** a Ravencoin chain split.
 
+Launch identity, economics, and burn addresses: [doc/LAUNCH_SPEC.md](doc/LAUNCH_SPEC.md). **You do not need to put cash in to launch** — this is a mineable chain.
+
 ## Coin parameters
 
 | Parameter | Value |
@@ -15,7 +17,7 @@ This tree is based on current Ravencoin Core (`master` as of 2026-08) and rebran
 | Block reward | 5,000 RUCK |
 | Halving | every 2,100,000 blocks (~4 years) |
 | Supply | 21 billion |
-| Address prefix | `R` |
+| Address prefix | `K` (not Ravencoin `R`) |
 | P2P port | 8867 |
 | RPC port | 8866 |
 | Data directory | `%APPDATA%\Ruck` (Windows), `~/.ruck` (Linux) |

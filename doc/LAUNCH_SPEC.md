@@ -1,0 +1,91 @@
+# RuckCoin launch spec (draft)
+
+Frozen chain identity for public launch. Do not change these after people start mining.
+
+## Do you need your own cash?
+
+**No. You do not need to put money in to launch RuckCoin.**
+
+This is a mineable proof-of-work coin, like Ravencoin:
+
+- Coins are created when someone mines a block.
+- There is no premine, no ICO, and no team allocation.
+- Nodes, the wallet, and mining do not require a DEX pool.
+
+The “$5k–$15k of your own cash” line in the plan is **optional and later**. It only applies if, after the chain is alive and people want to *trade* RUCK on a DEX, you personally want to seed a wrapped-RUCK / USDT (or ETH) pool. That cash would be yours, because a fair-mined coin has no unsold tokens sitting around to dump into liquidity.
+
+| When | Cash needed |
+| --- | --- |
+| Launch the chain, wallets, seeds, explorer, GPU mining | **$0** (plus whatever you already pay for VPS, if any) |
+| First DEX trading pair, if you ever want one | Optional **$5k–$15k** of *your* money, after launch |
+| Protocol asset burns | Automatic, paid by whoever issues an asset |
+
+Skip the DEX until there is a real reason. Launch does not depend on it.
+
+## Chain identity
+
+| Item | Value |
+| --- | --- |
+| Name | RuckCoin |
+| Ticker | RUCK |
+| Algorithm | Genesis X16Rv2; KAWPOW from 1 second after genesis |
+| Block time | 1 minute |
+| Block reward | 5,000 RUCK |
+| Halving | every 2,100,000 blocks (~4 years) |
+| Max supply | 21,000,000,000 RUCK |
+| Premine | none |
+| P2P port | 8867 |
+| RPC port | 8866 |
+| Magic | `RUCK` (`0x52 0x55 0x43 0x4b`) |
+| Address prefix | **`K`** (version 45). Not compatible with Ravencoin `R` addresses. |
+| Script prefix | `k` (version 107) |
+| BIP44 coin type | 1776 (unofficial) |
+| Genesis time | 1786665600 (2026-08-14 00:00:00 UTC) |
+| Genesis nonce | 17493341 |
+| Genesis hash | `000000862510f4b80dc2ecd874b5603917424b9289d26d14e0f63e70e9cc9a50` |
+| Data directory | `%APPDATA%\Ruck` (Windows), `~/.ruck` (Linux) |
+
+**Never send Ravencoin (RVN) to a `K…` address, and never send RUCK to an `R…` Ravencoin address.**
+
+## Economics (frozen)
+
+- Year-1 emission if blocks stay on schedule: about 2.6 billion RUCK.
+- Liquidity at launch: none. There is no RUCK until it is mined.
+- Consensus burns (automatic, when someone uses assets):
+
+  | Action | Burn |
+  | --- | --- |
+  | Issue asset | 500 RUCK |
+  | Reissue / sub / channel | 100 |
+  | Unique | 5 |
+  | Qualifier | 1000 |
+  | Restricted | 1500 |
+  | Tag | 0.1 |
+
+- Extra scheduled “supply burns”: none.
+- Optional later: a published foundation address may burn 25–50% of *its own inflows* once per quarter, with a txid. That is not consensus and is not required for launch.
+
+## Burn addresses (unspendable)
+
+| Use | Address |
+| --- | --- |
+| Issue asset | `KVUdNCN27k6K9nQZMoP3oH4Lu9G5RZK3Ui` |
+| Reissue | `KLXEKc36VJzFDAHp1iknodm8fGCDLtjLk9` |
+| Sub-asset | `KN2d83sgWNUBVoMie4M3gfprPgjMJqkKkH` |
+| Unique | `KTLtFJXxuCAmavuF6nm7TVZpD54TLEN8mV` |
+| Message channel | `KDuMvtTY8nGY9sTttYYaGN82xk7nhGbL13` |
+| Qualifier | `KLQhZi9xxvK4rRCj912NG2jTLavFcnMRZS` |
+| Sub-qualifier | `KWEwQoGRqEvYH4cAXmom9rCaEXpZiffVES` |
+| Restricted | `KRQiWua21ciB6af8jNjdWMm777qA4HoYmy` |
+| Tag | `KQaccmhNwTjCZxn3DPAPjzMXQ1TKxN7bgx` |
+| Global burn | `KAf8usFDdmMQJ1yoxnvo9AFnDkKeA1bYi1` |
+
+## Not in the protocol
+
+No masternodes, no built-in veterans payout, no staking, no scheduled supply burn, no DEX, no premine.
+
+Veterans / governance, if you still want it, is social (a published donation address after launch), not a hidden genesis wallet.
+
+## Still TODO before a public announcement
+
+See the launch plan: three seed nodes, Windows `ruck-qt`, GPU/stratum mining, explorer, launch-day clock at height 0.
