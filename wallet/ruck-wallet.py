@@ -11,7 +11,8 @@ import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+import re
+from urllib.parse import parse_qs, unquote, urlparse
 
 HOST = "127.0.0.1"
 PORT = 8870
@@ -96,6 +97,7 @@ def json_out(handler: BaseHTTPRequestHandler, code: int, obj) -> None:
     handler.send_header("Content-Type", "application/json; charset=utf-8")
     handler.send_header("Content-Length", str(len(data)))
     handler.send_header("Cache-Control", "no-store")
+    handler.send_header("Access-Control-Allow-Origin", "*")
     handler.end_headers()
     handler.write_body(data)
 
@@ -113,6 +115,87 @@ def read_json(handler: BaseHTTPRequestHandler) -> dict:
     length = int(handler.headers.get("Content-Length") or 0)
     raw = handler.rfile.read(length) if length else b"{}"
     return json.loads(raw.decode() or "{}")
+
+
+def lookup(query: str) -> dict:
+    q = (query or "").strip()
+    if not q:
+        raise RuntimeError("Type a block number, a payment id, or a K address.")
+
+    if q.isdigit():
+        height = int(q)
+        h = rpc("getblockhash", [height])
+        block = rpc("getblock", [h, 1])
+        txs = block.get("tx") or []
+        return {
+            "kind": "block",
+            "height": block.get("height"),
+            "hash": block.get("hash"),
+            "time": block.get("time"),
+            "txcount": len(txs),
+            "txs": txs[:30],
+        }
+
+    if q.startswith("K") or q.startswith("k"):
+        try:
+            bal = rpc("getaddressbalance", [{"addresses": [q]}, True])
+        except Exception:
+            bal = rpc("getaddressbalance", [{"addresses": [q]}])
+        assets = {}
+        try:
+            assets = rpc("listassetbalancesbyaddress", [q]) or {}
+        except Exception:
+            assets = {}
+        ruck = 0
+        received = 0
+        extra = []
+        if isinstance(bal, list):
+            for row in bal:
+                name = row.get("assetName") or "RUCK"
+                if name in ("RVN", "RUCK", ""):
+                    ruck = float(row.get("balance") or 0) / 1e8
+                    received = float(row.get("received") or 0) / 1e8
+                else:
+                    extra.append({"name": name, "balance": float(row.get("balance") or 0) / 1e8})
+        elif isinstance(bal, dict):
+            ruck = float(bal.get("balance") or 0) / 1e8
+            received = float(bal.get("received") or 0) / 1e8
+        return {
+            "kind": "address",
+            "address": q,
+            "balance": ruck,
+            "received": received,
+            "assets": assets if isinstance(assets, dict) else {},
+            "asset_rows": extra,
+        }
+
+    if len(q) == 64 and all(c in "0123456789abcdefABCDEF" for c in q):
+        try:
+            tx = rpc("getrawtransaction", [q, True])
+            return {
+                "kind": "tx",
+                "txid": tx.get("txid") or q,
+                "confirmations": tx.get("confirmations", 0),
+                "blockhash": tx.get("blockhash"),
+                "time": tx.get("time") or tx.get("blocktime"),
+                "vin": len(tx.get("vin") or []),
+                "vout": tx.get("vout") or [],
+            }
+        except Exception:
+            block = rpc("getblock", [q, 1])
+            txs = block.get("tx") or []
+            return {
+                "kind": "block",
+                "height": block.get("height"),
+                "hash": block.get("hash"),
+                "time": block.get("time"),
+                "txcount": len(txs),
+                "txs": txs[:30],
+            }
+
+    raise RuntimeError(
+        "That does not look like a block number, a payment id, or a RuckCoin address (starts with K)."
+    )
 
 
 def overview() -> dict:
@@ -223,6 +306,12 @@ class Handler(BaseHTTPRequestHandler):
                 return json_out(self, 200, overview())
             except Exception as e:
                 return json_out(self, 503, {"ok": False, "error": str(e)})
+        if path == "/api/lookup":
+            q = (parse_qs(parsed.query).get("q") or [""])[0]
+            try:
+                return json_out(self, 200, {"ok": True, **lookup(q)})
+            except Exception as e:
+                return json_out(self, 404, {"ok": False, "error": str(e)})
         if path == "/api/settings":
             with _cfg_lock:
                 public = {
@@ -307,6 +396,38 @@ class Handler(BaseHTTPRequestHandler):
                 else:
                     txid = rpc("sendtoaddress", [dest, amount])
                 return json_out(self, 200, {"ok": True, "txid": txid})
+            if path == "/api/issue":
+                name = (body.get("name") or "").strip().upper().replace(" ", "_")
+                qty = float(body.get("qty") or 0)
+                if not re.match(r"^[A-Z][A-Z0-9._]{2,29}$", name):
+                    return json_out(
+                        self,
+                        400,
+                        {
+                            "ok": False,
+                            "error": "Use 3–30 letters or numbers, starting with a letter. Example: TICKET or CLUB_PASS.",
+                        },
+                    )
+                if qty < 1:
+                    return json_out(self, 400, {"ok": False, "error": "Issue at least 1 unit."})
+                with _cfg_lock:
+                    to = _cfg.get("receive_address") or ""
+                # name, qty, to_address, change, units=0, reissuable=false, has_ipfs=false
+                txid = rpc("issue", [name, qty, to, "", 0, False, False])
+                if isinstance(txid, list):
+                    txid = txid[0] if txid else ""
+                return json_out(
+                    self,
+                    200,
+                    {
+                        "ok": True,
+                        "txid": txid,
+                        "name": name,
+                        "qty": qty,
+                        "message": "Created %s. This cost 500 RUCK, which is gone for good. You also received the %s! owner token."
+                        % (name, name),
+                    },
+                )
             if path == "/api/transfer":
                 name = (body.get("asset") or "").strip()
                 dest = (body.get("to") or "").strip()

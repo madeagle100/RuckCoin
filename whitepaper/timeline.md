@@ -55,8 +55,8 @@ We will not publish a token price, an exchange listing date, or a “guaranteed�
 
 ## Phase 2 — A wallet people can actually use
 
-**When:** late August – mid September 2026  
-**Status:** Next
+**When:** late August 2026  
+**Status:** Done (explorer, issue-asset, one-click start added)
 
 **What we ship**
 
@@ -65,7 +65,7 @@ We will not publish a token price, an exchange listing date, or a “guaranteed�
 - A simple explorer (height, txid, `K` address).
 - A desktop start path for the node plus that wallet.
 
-**Exit check:** Someone who is not us can receive, send, and issue an asset without using raw commands.
+**Exit check:** Someone who is not us can receive, send, look up a payment, and issue an asset without using raw commands. Met.
 
 ---
 
