@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RuckCoin FAQ</title>
+  <meta name="description" content="Straight answers: can I buy RUCK, is this Ravencoin, is there a premine, how do veterans get support, when is launch.">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="tape">Private test only. There is nothing to buy.</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="img/mark.svg" alt="">
+        <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <ul class="nav-links" id="menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="learn.html">How it works</a></li>
+        <li><a href="paper.html">White paper</a></li>
+        <li><a href="timeline.html">Timeline</a></li>
+        <li><a href="spec.html">Spec</a></li>
+        <li><a href="faq.html" aria-current="page">FAQ</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main id="main" class="wrap faq">
+    <p class="kicker">Straight answers</p>
+    <h1>FAQ</h1>
+    <p class="lede">If an answer here disagrees with the <a href="paper.html">white paper</a>, the paper wins. If the paper disagrees with the running code after launch, the code wins.</p>
+
+    <details open>
+      <summary>Can I buy RUCK right now?</summary>
+      <p>No. There is no sale, no ICO, and no official market. The public network is not open. Anyone offering you RUCK for cash today is not this project.</p>
+    </details>
+    <details>
+      <summary>Is this Ravencoin?</summary>
+      <p>No. We copied Ravencoin’s software and started a new network. Ravencoin coins (RVN) stay on Ravencoin. RuckCoin addresses start with K. Ravencoin addresses start with R. Do not mix them.</p>
+    </details>
+    <details>
+      <summary>Is there a premine?</summary>
+      <p>The public start will have none. There is a private test chain whose builder wallet holds mined test coins. Those coins will not carry over. If we ever call that wallet the public coin, we have broken the paper.</p>
+    </details>
+    <details>
+      <summary>How do veterans actually get support?</summary>
+      <p>Not by a hidden genesis wallet and not by a tax on every block. After public launch we will publish a donation address. Anyone can watch it. Optional later: we burn a stated share of what that address receives and publish the transaction.</p>
+    </details>
+    <details>
+      <summary>When does it launch?</summary>
+      <p>After a wallet people can actually use (Phase 2). Target window for a height-0 public start is September–October 2026 if that wallet is ready. See the <a href="timeline.html">timeline</a>.</p>
+    </details>
+    <details>
+      <summary>How are new coins created?</summary>
+      <p>Mining only. About one block a minute. 5,000 RUCK per block until the first halving at 2.1 million blocks. The puzzle after genesis is KAWPOW (GPU).</p>
+    </details>
+    <details>
+      <summary>What is an asset?</summary>
+      <p>A name you create on the same chain, with a quantity you choose — a ticket, a membership, a unique item. Creating a normal name burns 500 RUCK so names stay scarce. The chain does not make your asset legal. The law still applies.</p>
+    </details>
+    <details>
+      <summary>Do I need to put money in to launch?</summary>
+      <p>No. Nodes, wallets, and mining do not require a DEX pool. Optional later, if people want a trading pair, someone would have to fund that with their own cash. Launch does not depend on it.</p>
+    </details>
+    <details>
+      <summary>Will you list on a big exchange?</summary>
+      <p>We will not promise that. Listings are other people’s decisions. They are not on the calendar.</p>
+    </details>
+    <details>
+      <summary>Where is the code?</summary>
+      <p><a href="https://github.com/madeagle100/RuckCoin">github.com/madeagle100/RuckCoin</a>. The programs still build as <code>ravend</code> / <code>raven-cli</code> because that is the upstream build system. Use <code>ruckd</code> and <code>ruck-cli</code> if you have the wrappers.</p>
+    </details>
+    <details>
+      <summary>Can I run a node today?</summary>
+      <p>You can build from source and talk to the private test setup if you are us, on the local machine. You should not treat that as a public network, and you should not open the RPC port to the internet with the test password.</p>
+    </details>
+    <details>
+      <summary>What if I send coins to the wrong address?</summary>
+      <p>They are gone. There is no support desk that can reverse a blockchain payment. Check the first letter. K is RuckCoin. R is Ravencoin.</p>
+    </details>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <strong>RuckCoin</strong>
+      <small>Not an offer to sell coins.</small>
+    </div>
+  </footer>
+  <script src="js/site.js"></script>
+</body>
+</html>

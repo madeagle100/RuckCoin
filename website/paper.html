@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RuckCoin White Paper v1.0</title>
+  <meta name="description" content="RuckCoin white paper: a fair-launch mineable coin for value and assets, built to serve veterans in the open. Version 1.0, 14 August 2026.">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="tape">Private test only. Public start is a fresh height 0. This paper is not a sale.</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="img/mark.svg" alt="">
+        <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <ul class="nav-links" id="menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="learn.html">How it works</a></li>
+        <li><a href="paper.html" aria-current="page">White paper</a></li>
+        <li><a href="timeline.html">Timeline</a></li>
+        <li><a href="spec.html">Spec</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <article class="paper">
+      <p class="kicker">White paper · version 1.0</p>
+      <h1>RuckCoin</h1>
+      <p class="lede">A fair-launch, mineable coin for sending value and issuing assets. Built to serve veterans in the open, not through a hidden premine.</p>
+      <p class="meta">14 August 2026 · Ticker RUCK · Independent network (not Ravencoin, not Bitcoin)<br>
+      Canonical text also lives in the repo as <code>whitepaper/ruckcoin-whitepaper.md</code>.</p>
+
+      <nav class="toc" aria-label="Contents">
+        <strong>Contents</strong>
+        <ol>
+          <li><a href="#first">Read this first</a></li>
+          <li><a href="#one">In one page</a></li>
+          <li><a href="#why">Why this exists</a></li>
+          <li><a href="#is">What it is, and is not</a></li>
+          <li><a href="#mine">How a coin is created</a></li>
+          <li><a href="#money">Supply and money rules</a></li>
+          <li><a href="#addr">Addresses (K)</a></li>
+          <li><a href="#assets">Assets</a></li>
+          <li><a href="#lineage">Bitcoin and Ravencoin</a></li>
+          <li><a href="#sec">Security</a></li>
+          <li><a href="#refuse">What we refuse</a></li>
+          <li><a href="#launch">Public launch rule</a></li>
+          <li><a href="#risks">Risks</a></li>
+          <li><a href="#gloss">Glossary</a></li>
+        </ol>
+      </nav>
+
+      <h2 id="first">0. Read this first</h2>
+      <p><strong>RuckCoin is not a public network yet.</strong></p>
+      <p>A working test chain exists on one local computer. Blocks have been mined, coins have been sent, and a test asset has been issued. That test wallet belongs to the builders. Those test coins will <strong>not</strong> be the public supply.</p>
+      <p>When RuckCoin opens to the public, it will start again at <strong>height 0</strong>. Nobody gets a head start. There is no premine, no ICO, no founder allocation, and nothing to buy from the project.</p>
+      <p>Until that public start is announced on this site and in the source repository, <strong>do not send money to anyone promising RUCK.</strong></p>
+
+      <h2 id="one">1. In one page</h2>
+      <p>RuckCoin is a cryptocurrency you <strong>mine</strong>, not buy from us. It is a code fork of Ravencoin, which itself comes from Bitcoin. A code fork means we copied the software and started a <strong>new, separate network</strong>. It is not a split of the Ravencoin chain. RVN and RUCK do not mix.</p>
+      <p>Once it is public you can hold and send RUCK, issue named assets, and use the messaging and voting tools inherited from Ravencoin. You cannot get coins from a premine. You cannot stake. There are no masternodes. You cannot send RUCK to an <code>R…</code> Ravencoin address.</p>
+      <p><strong>Why “Ruck.”</strong> A ruck is the pack you carry. The social aim is to support veterans — with a published donation address and open books after launch, not with a hidden stash minted at the start. That support is a promise we will be judged on, not a rule baked into every block.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Rule</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Ticker</td><td>RUCK</td></tr>
+            <tr><td>How new coins appear</td><td>Proof-of-work mining only</td></tr>
+            <tr><td>Block time</td><td>about 1 minute</td></tr>
+            <tr><td>Block reward</td><td>5,000 RUCK</td></tr>
+            <tr><td>Halving</td><td>every 2,100,000 blocks (~4 years)</td></tr>
+            <tr><td>Max supply</td><td>21 billion RUCK</td></tr>
+            <tr><td>Year-1 issuance if on schedule</td><td>about 2.6 billion RUCK</td></tr>
+            <tr><td>Premine / ICO / team cut</td><td>none</td></tr>
+            <tr><td>Address style</td><td>starts with K</td></tr>
+            <tr><td>Algorithm</td><td>KAWPOW (after a short X16Rv2 genesis)</td></tr>
+            <tr><td>Assets</td><td>on from block 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="why">2. Why this exists</h2>
+      <p>Most new coins start with a story and a sale. Someone mints a large pile, keeps a cut, and asks the public to buy the rest.</p>
+      <p>RuckCoin starts the other way around, the same way Bitcoin and Ravencoin did: open source software, coins from work, and no founder pile at the first block.</p>
+      <p>We forked Ravencoin instead of writing a chain from scratch because Ravencoin already solved the hard part we want: a Bitcoin-style ledger that understands assets. Bitcoin is cash. Ravencoin is cash plus “who owns this named thing.” RuckCoin keeps that, on its own network, with its own name, ports, and addresses.</p>
+      <p>If we had put a veterans tax or a team wallet into genesis, you would have to trust us forever. We refused that. Veterans support, if it is real, will be a published address, public inflows, and (optionally) public burns of a stated share of <em>those</em> inflows. You will be able to check the chain.</p>
+
+      <h2 id="is">3. What RuckCoin is, and what it is not</h2>
+      <h3>It is</h3>
+      <ul>
+        <li>A peer-to-peer network. You run software. You do not need a company account.</li>
+        <li>Proof of work. Miners compete to add the next block.</li>
+        <li>UTXO-based, like Bitcoin. Your wallet holds unspent outputs, not an account inside a smart contract.</li>
+        <li>Asset-aware. The node itself knows about named assets.</li>
+        <li>Fair issuance. 21 billion RUCK, released on a known schedule.</li>
+      </ul>
+      <h3>It is not</h3>
+      <ul>
+        <li>A Ravencoin clone that talks to Ravencoin peers. Magic bytes are <code>RUCK</code>. Ports are 8867 and 8866.</li>
+        <li>An Ethereum-style smart-contract platform. You do not write Solidity.</li>
+        <li>A security offering or a share of a company. This paper is not a prospectus.</li>
+        <li>Live on the public internet as of this version.</li>
+      </ul>
+      <h3>Veterans, said plainly</h3>
+      <p>The protocol does not mint coins for a veterans fund at genesis, skim a percent of every block, or lock a master key that we control. After public launch the project will publish one donation address, say what it is for, and if we later burn part of what that address receives, publish the transaction id. If we fail, you will be able to see it.</p>
+
+      <h2 id="mine">4. How a coin is created</h2>
+      <p>Every block contains transfers people broadcast, asset actions, and a special first line — the coinbase — that creates 5,000 new RUCK for the miner who found the page.</p>
+      <p>KAWPOW is the puzzle after genesis. It is meant to be mined with ordinary GPUs. The very first block is identified with X16Rv2; every block after that is KAWPOW.</p>
+      <p>You do not need to mine to use RuckCoin. You only need to mine if you want new coins to appear in your wallet, or if you want to help secure the network. There is no button that prints coins without work.</p>
+
+      <h2 id="money">5. Supply and money rules</h2>
+      <p>These numbers are frozen. Changing them after people mine would break trust and, in most cases, split the chain.</p>
+      <p>Block 1 through 2,099,999: 5,000 RUCK per block. Then the reward halves every 2,100,000 blocks. The curve stops at 21,000,000,000 RUCK. If the chain stays on schedule, the first year creates about 2.6 billion RUCK.</p>
+      <p>Some actions cost RUCK that is sent to an unspendable burn address. Nobody, including us, can spend those outputs.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Action</th><th>RUCK burned</th></tr></thead>
+          <tbody>
+            <tr><td>Issue a new asset name</td><td>500</td></tr>
+            <tr><td>Reissue, sub-asset, or message channel</td><td>100</td></tr>
+            <tr><td>Unique asset</td><td>5</td></tr>
+            <tr><td>Qualifier</td><td>1,000</td></tr>
+            <tr><td>Restricted asset</td><td>1,500</td></tr>
+            <tr><td>Tag</td><td>0.1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>There is no extra scheduled supply burn in the protocol. Optional later: a published foundation address may burn 25–50% of its own incoming donations once a quarter, with a public transaction id.</p>
+      <p><strong>Kitchen-table sentence:</strong> new RUCK is created only when a block is mined. Some RUCK is destroyed when people create assets. Nobody is allocated coins at the start.</p>
+
+      <h2 id="addr">6. Addresses, and why they start with K</h2>
+      <p>A RuckCoin payment address starts with <strong>K</strong> (version byte 45). Ravencoin addresses start with <strong>R</strong>. Script addresses on RuckCoin start with <strong>k</strong>. The unofficial BIP44 coin type is 1776.</p>
+      <p>Never send Ravencoin to a K address, or RuckCoin to an R address. Never trust an address a stranger DMs you.</p>
+
+      <h2 id="assets">7. Assets</h2>
+      <p>An asset is a name you create on the chain, with a quantity you choose. The chain does not enforce the real-world meaning. The issuer does, and the law in your country still applies.</p>
+      <p>Names are unique. The node understands the asset, so wallets can refuse to destroy it by accident. Rules are the protocol’s rules, not a one-off program.</p>
+      <p>If you issued <code>LEMONADE</code>, you can later send RUCK to every current holder in proportion, in one command. You can also issue vote tokens 1:1 to holders. These features already exist in the Ravencoin lineage. RuckCoin keeps them.</p>
+
+      <h2 id="lineage">8. How this relates to Bitcoin and Ravencoin</h2>
+      <p>Bitcoin (2009) → Ravencoin (2018, assets, 1-minute blocks, fair POW) → RuckCoin (2026, new network, new name, new addresses).</p>
+      <p>We changed network magic, ports, data directory, address version, genesis, and we removed Ravencoin seeds and checkpoints. We did not invent a new science project in place of UTXOs, scripts, or the inherited asset rules.</p>
+      <p>RuckCoin is not a Ravencoin sidechain and not an airdrop to RVN holders.</p>
+
+      <h2 id="sec">9. Security, in ordinary words</h2>
+      <p>Your coins are the keys in your wallet. We cannot reverse a payment.</p>
+      <p>After public launch, a thief who wants to rewrite history must out-mine the honest network. On day one, with few miners, that is easier than it will be later. Treat early blocks as a thin wall — not as Bitcoin.</p>
+      <p>Do not announce a public network from one home PC. A public coin needs published binaries, more than one seed if people show up, and a start time people can verify.</p>
+
+      <h2 id="refuse">10. What we refuse to put in the protocol</h2>
+      <ul>
+        <li>Premine or instamine for founders</li>
+        <li>ICO, private sale, or “strategic allocation”</li>
+        <li>Masternodes or staking</li>
+        <li>A built-in veterans tax on every block</li>
+        <li>A hidden genesis wallet</li>
+        <li>A scheduled supply burn from a privileged key</li>
+        <li>A DEX inside the base protocol</li>
+      </ul>
+      <p>A later market listing is a normal market thing. It is not required to launch. Launch costs no treasury. Coins do not exist until they are mined.</p>
+
+      <h2 id="launch">12. Public launch rule</h2>
+      <p>The current test genesis is time <code>1786665600</code> (14 August 2026, 00:00:00 UTC), nonce <code>17493341</code>, hash <code>000000862510f4b80dc2ecd874b5603917424b9289d26d14e0f63e70e9cc9a50</code>.</p>
+      <p>That chain proved mining, sends, and assets. The builder wallet on that chain holds mined test coins. <strong>Those coins are not a premine of the public coin. They will not carry over.</strong></p>
+      <p>Public launch means a published height-0 start, tagged source and binaries, this website and GitHub stating the same start time, and an honest seed story. If we skip the reset and call the test wallet “the public chain,” treat that as a broken promise.</p>
+      <p>The full calendar is on the <a href="timeline.html">timeline</a> page.</p>
+
+      <h2 id="risks">15. Risks (said without marketing)</h2>
+      <ul>
+        <li>New networks die. Most never get a second miner.</li>
+        <li>Early hash rate is low. Reorgs and attacks are cheaper at the start.</li>
+        <li>Software has bugs. This is a fork of a large C++ codebase.</li>
+        <li>No liquidity. There is no official market.</li>
+        <li>Issuing an asset that is a security, a gambling chip, or a fraud in your country is still illegal.</li>
+        <li>Veterans outcome is social. If we do not publish the address and the flows, we failed a promise, not a consensus rule.</li>
+      </ul>
+
+      <h2 id="gloss">16. Glossary</h2>
+      <p><strong>Asset</strong> — A named token on the RuckCoin chain, separate from RUCK itself.</p>
+      <p><strong>Block</strong> — A page of transactions plus the proof of work that lets it hang off the previous page.</p>
+      <p><strong>Burn</strong> — Sending coins to an address that can never spend them.</p>
+      <p><strong>Coinbase</strong> — The first transaction in a block; this is how new RUCK is created.</p>
+      <p><strong>Fork (code)</strong> — Copying software and running a new network. Not the same as a chain split.</p>
+      <p><strong>Genesis</strong> — Block 0. Everything hangs off it.</p>
+      <p><strong>Halving</strong> — Cutting the block reward in half after a fixed number of blocks.</p>
+      <p><strong>Height</strong> — How many blocks after genesis.</p>
+      <p><strong>KAWPOW</strong> — The mining puzzle used after genesis.</p>
+      <p><strong>Node</strong> — A computer running the software and keeping a copy of the chain.</p>
+      <p><strong>Premine</strong> — Coins created for insiders before the public can mine. The public start will not have this.</p>
+      <p><strong>Proof of work</strong> — A hard puzzle whose answer is easy to check.</p>
+      <p><strong>Seed node</strong> — A published computer new peers can dial to find the rest of the network.</p>
+      <p><strong>UTXO</strong> — An unspent output. Your “balance” is the sum of UTXOs your keys can spend.</p>
+
+      <p class="meta" style="margin-top:2.5rem">RuckCoin is free and open source under the MIT license, as inherited from Bitcoin and Ravencoin. This paper describes a project and a network plan. It is not an offer to sell coins.</p>
+      <p><a href="https://github.com/madeagle100/RuckCoin">Source on GitHub</a> · <a href="../whitepaper/ruckcoin-whitepaper.md">Markdown original</a> (in the repo)</p>
+    </article>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <strong>RuckCoin white paper v1.0</strong>
+      <small>Also see <a href="spec.html">the spec plate</a> and <a href="timeline.html">the timeline</a>.</small>
+    </div>
+  </footer>
+  <script src="js/site.js"></script>
+</body>
+</html>

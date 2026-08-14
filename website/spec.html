@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RuckCoin specification</title>
+  <meta name="description" content="Frozen RuckCoin parameters: supply, ports, addresses, genesis, burns. Confirm against consensus code if they ever disagree.">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="tape">If this page and the running code ever disagree, the running consensus code wins.</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="img/mark.svg" alt="">
+        <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <ul class="nav-links" id="menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="learn.html">How it works</a></li>
+        <li><a href="paper.html">White paper</a></li>
+        <li><a href="timeline.html">Timeline</a></li>
+        <li><a href="spec.html" aria-current="page">Spec</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <p class="kicker">Stamped numbers</p>
+    <h1>Specification</h1>
+    <p class="lede">Frozen identity for the public start. Do not change these after people start mining the public chain. Source of truth in the repo: <code>doc/LAUNCH_SPEC.md</code> and <code>src/chainparams.cpp</code>.</p>
+
+    <section class="plate" aria-label="Identity">
+      <div class="plate-head"><span>Network identity</span><span>test genesis 14 Aug 2026</span></div>
+      <div class="plate-grid">
+        <dl><dt>Name</dt><dd>RuckCoin</dd></dl>
+        <dl><dt>Ticker</dt><dd>RUCK</dd></dl>
+        <dl><dt>Magic</dt><dd><code>RUCK</code> · 0x52 55 43 4B</dd></dl>
+        <dl><dt>P2P / RPC</dt><dd>8867 / 8866</dd></dl>
+        <dl><dt>Address version</dt><dd>45 → K</dd></dl>
+        <dl><dt>Script version</dt><dd>107 → k</dd></dl>
+        <dl><dt>BIP44 (unofficial)</dt><dd>1776</dd></dl>
+        <dl><dt>URI</dt><dd><code>ruck:</code></dd></dl>
+        <dl><dt>Datadir</dt><dd>%APPDATA%\Ruck · ~/.ruck</dd></dl>
+        <dl><dt>Config / pid</dt><dd>ruck.conf · ruckd.pid</dd></dl>
+      </div>
+    </section>
+
+    <h2>Money</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Item</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>PoW after genesis</td><td>KAWPOW (genesis identity X16Rv2)</td></tr>
+          <tr><td>Target block time</td><td>60 seconds</td></tr>
+          <tr><td>Subsidy</td><td>5,000 RUCK</td></tr>
+          <tr><td>Halving interval</td><td>2,100,000 blocks</td></tr>
+          <tr><td>Max supply</td><td>21,000,000,000 RUCK</td></tr>
+          <tr><td>Premine</td><td>none on public start</td></tr>
+          <tr><td>Assets</td><td>enabled from block 1</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Test genesis (not the public start unless we reset)</h2>
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><th>Unix time</th><td><code>1786665600</code> (14 Aug 2026 00:00:00 UTC)</td></tr>
+          <tr><th>Nonce</th><td><code>17493341</code></td></tr>
+          <tr><th>Hash</th><td><code>000000862510f4b80dc2ecd874b5603917424b9289d26d14e0f63e70e9cc9a50</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Public launch requires height 0 with no spendable premine. See the <a href="paper.html#launch">white paper</a>.</p>
+
+    <h2>Asset burns</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Action</th><th>RUCK</th><th>Burn address</th></tr></thead>
+        <tbody>
+          <tr><td>Issue</td><td>500</td><td><code>KVUdNCN27k6K9nQZMoP3oH4Lu9G5RZK3Ui</code></td></tr>
+          <tr><td>Reissue</td><td>100</td><td><code>KLXEKc36VJzFDAHp1iknodm8fGCDLtjLk9</code></td></tr>
+          <tr><td>Sub-asset</td><td>100</td><td><code>KN2d83sgWNUBVoMie4M3gfprPgjMJqkKkH</code></td></tr>
+          <tr><td>Unique</td><td>5</td><td><code>KTLtFJXxuCAmavuF6nm7TVZpD54TLEN8mV</code></td></tr>
+          <tr><td>Message channel</td><td>100</td><td><code>KDuMvtTY8nGY9sTttYYaGN82xk7nhGbL13</code></td></tr>
+          <tr><td>Qualifier</td><td>1000</td><td><code>KLQhZi9xxvK4rRCj912NG2jTLavFcnMRZS</code></td></tr>
+          <tr><td>Sub-qualifier</td><td>1000</td><td><code>KWEwQoGRqEvYH4cAXmom9rCaEXpZiffVES</code></td></tr>
+          <tr><td>Restricted</td><td>1500</td><td><code>KRQiWua21ciB6af8jNjdWMm777qA4HoYmy</code></td></tr>
+          <tr><td>Tag</td><td>0.1</td><td><code>KQaccmhNwTjCZxn3DPAPjzMXQ1TKxN7bgx</code></td></tr>
+          <tr><td>Global burn</td><td>—</td><td><code>KAf8usFDdmMQJ1yoxnvo9AFnDkKeA1bYi1</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Not in the protocol</h2>
+    <p>No masternodes, staking, scheduled supply burn, DEX, premine, or built-in veterans payout.</p>
+
+    <p><a href="https://github.com/madeagle100/RuckCoin">github.com/madeagle100/RuckCoin</a></p>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <strong>RuckCoin</strong>
+      <small>Confirm burns and genesis against <code>src/chainparams.cpp</code> before tooling.</small>
+    </div>
+  </footer>
+  <script src="js/site.js"></script>
+</body>
+</html>
