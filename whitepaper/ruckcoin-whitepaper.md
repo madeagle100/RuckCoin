@@ -3,7 +3,7 @@
 **A fair-launch, mineable coin for sending value and issuing assets.  
 Built to serve veterans in the open, not through a hidden premine.**
 
-Version 1.0 · 14 August 2026  
+Version 1.1 · 14 August 2026  
 Ticker: **RUCK** · Network: independent (not Ravencoin, not Bitcoin)
 
 This paper is written for a regular reader first. Technical notes are marked as such. If a sentence uses a jargon word, the [glossary](#16-glossary) at the end explains it.
@@ -40,7 +40,7 @@ What you cannot do, by design:
 - You cannot stake. There are no masternodes.
 - You cannot send RUCK to a Ravencoin `R…` address, or RVN to a RuckCoin `K…` address. They are different formats on purpose.
 
-**Why “Ruck.”** A ruck is the pack you carry. The project’s social aim is to support veterans — with a published donation address and open books *after* launch, not with a hidden stash of coins minted at the start. That support is a **promise we will be judged on**, not a rule baked into every block.
+**Why “Ruck.”** A ruck is the pack you carry. The project’s social aim is to support veterans and homeless veterans **in the open**: one published address after launch, optional donations from the official wallet, and public records of what that address spends. That is a **promise we will be judged on**, not a tax baked into every block.
 
 **Money rules (frozen):**
 
@@ -72,7 +72,7 @@ RuckCoin starts the other way around, the same way Bitcoin and Ravencoin did:
 
 We forked Ravencoin instead of writing a chain from scratch because Ravencoin already solved the hard part we want: **a Bitcoin-style ledger that understands assets**. Bitcoin is cash. Ravencoin is cash plus “who owns this named thing.” RuckCoin keeps that, on its own network, with its own name, ports, and addresses, and with a public commitment to veterans that is social and auditable — not a protocol backdoor.
 
-If we had put a veterans tax or a team wallet into genesis, you would have to trust us forever. We refused that. Veterans support, if it is real, will be a published address, public inflows, and (optionally) public burns of a stated share of *those* inflows. You will be able to check the chain.
+If we had put a veterans tax or a team wallet into genesis, you would have to trust us forever. We refused that. A cut of every fee sounds generous and raises almost nothing on a new chain, while a cut of the block reward is a hidden tax. Support that is real is a published address, a choice in the official wallet, and public outflows you can check.
 
 ---
 
@@ -98,16 +98,23 @@ If we had put a veterans tax or a team wallet into genesis, you would have to tr
 The protocol does **not**:
 
 - mint coins for a veterans fund at genesis,
-- skim a percent of every block,
-- or lock a master key that we control.
+- skim a percent of the block reward or of miner fees,
+- or force every wallet on earth to pay a tax.
 
-The project **will**, after public launch:
+The project **will**, at public launch:
 
-- publish one donation address,
-- say what that address is for,
-- and if we later burn part of what that address receives, publish the transaction id.
+- publish **one** veterans address on the public site,
+- say it is for veterans, including homeless veterans,
+- put an **optional** “add a donation” line in the official wallet (off unless you turn it on; you pick the amount),
+- and publish outflows from that address (who received help, and the transaction id).
 
-If we fail at that, you will be able to see it. That is the point.
+Other wallets and raw commands do not have to donate. We will not pretend they do.
+
+Until that address is printed on the site, **there is no official veterans address.** Do not send coins to anyone claiming otherwise.
+
+We will **not** lock that address until a price, a market cap, or “the coin grows.” Help for veterans should not wait on a market. After launch the coins there are spendable for documented aid. Every outflow gets a public note and a transaction id. If the pot is empty, that is also public.
+
+If we fail at the published-address and public-outflow part, you will be able to see it. That is the point.
 
 ---
 
@@ -266,9 +273,9 @@ What we did **not** change, because changing them would invent a new science pro
 
 **The chain is as honest as its work.** After public launch, a thief who wants to rewrite history must out-mine the honest network. On day one, with few miners, that is easier than it will be later. That is true of every new proof-of-work coin. Treat early blocks as a new, thin wall — not as Bitcoin.
 
-**Do not announce a public network from one home PC.** A single node is a test. A public coin needs published binaries, more than one seed, and a start time people can verify.
+**A single private test node is not a public network.** A public coin needs published binaries, an honest seed story, and a start time people can verify.
 
-**RPC passwords on the test node are for localhost only.** They are not a production secret.
+Operator RPC belongs on localhost. Do not publish RPC credentials.
 
 ---
 
@@ -280,7 +287,7 @@ These are not coming later as a “surprise upgrade”:
 - ICO, private sale, or “strategic allocation”
 - Masternodes
 - Staking
-- A built-in veterans tax on every block
+- A built-in veterans tax on every block or every fee
 - A hidden genesis wallet
 - A scheduled supply burn from a privileged key
 - A DEX inside the base protocol
@@ -293,9 +300,9 @@ A DEX *listing*, much later, would be a normal market thing other people (or we,
 
 **Run a node.** The programs are still built as `ravend` / `raven-cli` / `raven-qt` because that is the upstream build system. The wrappers are `ruckd` and `ruck-cli`. Config file: `ruck.conf` (an old `raven.conf` in the same folder still works).
 
-**Wallet.** On the test machine, Linux Qt did not show a window under WSLg. A small local page is the working view today. A real public wallet (desktop, then whatever people actually use) is a launch requirement, not a nice-to-have.
+**Wallet.** The official public wallet is a launch requirement. When you send, it will offer an optional donation to the published veterans address. That box stays off unless you turn it on.
 
-**Mine.** GPU miners that speak KAWPOW / stratum can point at a RuckCoin node the same way they point at Ravencoin, once the public ports and a pool or solo path are published. Test mining already worked on the local node.
+**Mine.** GPU miners that speak KAWPOW can point at a RuckCoin node once the public start and connection details are published.
 
 **Issue an asset.** When the public chain is up, `issue NAME 1000` (and the GUI equivalent) burns 500 RUCK and creates the name.
 

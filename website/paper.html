@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>RuckCoin White Paper v1.0</title>
+  <title>RuckCoin White Paper v1.1</title>
   <meta name="description" content="RuckCoin white paper: a fair-launch mineable coin for value and assets, built to serve veterans in the open. Version 1.0, 14 August 2026.">
   <link rel="icon" href="img/mark.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,6 +26,7 @@
         <li><a href="learn.html">How it works</a></li>
         <li><a href="paper.html" aria-current="page">White paper</a></li>
         <li><a href="timeline.html">Timeline</a></li>
+        <li><a href="veterans.html">Veterans</a></li>
         <li><a href="spec.html">Spec</a></li>
         <li><a href="faq.html">FAQ</a></li>
       </ul>
@@ -34,7 +35,7 @@
 
   <main id="main" class="wrap">
     <article class="paper">
-      <p class="kicker">White paper · version 1.0</p>
+      <p class="kicker">White paper · version 1.1</p>
       <h1>RuckCoin</h1>
       <p class="lede">A fair-launch, mineable coin for sending value and issuing assets. Built to serve veterans in the open, not through a hidden premine.</p>
       <p class="meta">14 August 2026 · Ticker RUCK · Independent network (not Ravencoin, not Bitcoin)<br>
@@ -69,7 +70,7 @@
       <h2 id="one">1. In one page</h2>
       <p>RuckCoin is a cryptocurrency you <strong>mine</strong>, not buy from us. It is a code fork of Ravencoin, which itself comes from Bitcoin. A code fork means we copied the software and started a <strong>new, separate network</strong>. It is not a split of the Ravencoin chain. RVN and RUCK do not mix.</p>
       <p>Once it is public you can hold and send RUCK, issue named assets, and use the messaging and voting tools inherited from Ravencoin. You cannot get coins from a premine. You cannot stake. There are no masternodes. You cannot send RUCK to an <code>R…</code> Ravencoin address.</p>
-      <p><strong>Why “Ruck.”</strong> A ruck is the pack you carry. The social aim is to support veterans — with a published donation address and open books after launch, not with a hidden stash minted at the start. That support is a promise we will be judged on, not a rule baked into every block.</p>
+      <p><strong>Why “Ruck.”</strong> A ruck is the pack you carry. The social aim is to support veterans and homeless veterans in the open: one published address after launch, optional donations from the official wallet, and public records of what that address spends. That is a promise we will be judged on, not a tax baked into every block.</p>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Rule</th><th>Value</th></tr></thead>
@@ -93,7 +94,7 @@
       <p>Most new coins start with a story and a sale. Someone mints a large pile, keeps a cut, and asks the public to buy the rest.</p>
       <p>RuckCoin starts the other way around, the same way Bitcoin and Ravencoin did: open source software, coins from work, and no founder pile at the first block.</p>
       <p>We forked Ravencoin instead of writing a chain from scratch because Ravencoin already solved the hard part we want: a Bitcoin-style ledger that understands assets. Bitcoin is cash. Ravencoin is cash plus “who owns this named thing.” RuckCoin keeps that, on its own network, with its own name, ports, and addresses.</p>
-      <p>If we had put a veterans tax or a team wallet into genesis, you would have to trust us forever. We refused that. Veterans support, if it is real, will be a published address, public inflows, and (optionally) public burns of a stated share of <em>those</em> inflows. You will be able to check the chain.</p>
+      <p>If we had put a veterans tax or a team wallet into genesis, you would have to trust us forever. We refused that. A cut of every fee sounds generous and raises almost nothing on a new chain. A lock until a price makes help wait on a market. Support that is real is a published address, a choice in the official wallet, and public outflows you can check.</p>
 
       <h2 id="is">3. What RuckCoin is, and what it is not</h2>
       <h3>It is</h3>
@@ -112,7 +113,7 @@
         <li>Live on the public internet as of this version.</li>
       </ul>
       <h3>Veterans, said plainly</h3>
-      <p>The protocol does not mint coins for a veterans fund at genesis, skim a percent of every block, or lock a master key that we control. After public launch the project will publish one donation address, say what it is for, and if we later burn part of what that address receives, publish the transaction id. If we fail, you will be able to see it.</p>
+      <p>The protocol does not mint coins for a fund at genesis, skim miner fees or the block reward, or force every wallet to pay a tax. At public launch we publish <strong>one</strong> address on the <a href="veterans.html">veterans page</a>, offer an optional donate line in the official wallet (off unless you turn it on), and list outflows with transaction ids. We will not lock that fund until a price. Until the address is on the site, there is no official fund.</p>
 
       <h2 id="mine">4. How a coin is created</h2>
       <p>Every block contains transfers people broadcast, asset actions, and a special first line — the coinbase — that creates 5,000 new RUCK for the miner who found the page.</p>
@@ -156,14 +157,14 @@
       <h2 id="sec">9. Security, in ordinary words</h2>
       <p>Your coins are the keys in your wallet. We cannot reverse a payment.</p>
       <p>After public launch, a thief who wants to rewrite history must out-mine the honest network. On day one, with few miners, that is easier than it will be later. Treat early blocks as a thin wall — not as Bitcoin.</p>
-      <p>Do not announce a public network from one home PC. A public coin needs published binaries, more than one seed if people show up, and a start time people can verify.</p>
+      <p>A private test is not a public network. A public coin needs published binaries, an honest seed story, and a start time people can verify.</p>
 
       <h2 id="refuse">10. What we refuse to put in the protocol</h2>
       <ul>
         <li>Premine or instamine for founders</li>
         <li>ICO, private sale, or “strategic allocation”</li>
         <li>Masternodes or staking</li>
-        <li>A built-in veterans tax on every block</li>
+        <li>A built-in veterans tax on every block or every fee</li>
         <li>A hidden genesis wallet</li>
         <li>A scheduled supply burn from a privileged key</li>
         <li>A DEX inside the base protocol</li>
