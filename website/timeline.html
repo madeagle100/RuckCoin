@@ -26,6 +26,7 @@
         <li><a href="learn.html">How it works</a></li>
         <li><a href="paper.html">White paper</a></li>
         <li><a href="timeline.html" aria-current="page">Timeline</a></li>
+        <li><a href="veterans.html">Veterans</a></li>
         <li><a href="spec.html">Spec</a></li>
         <li><a href="faq.html">FAQ</a></li>
       </ul>
@@ -54,9 +55,9 @@
         <div class="when">14 Aug 2026<br><span class="tag done">Phase 0 · Done</span></div>
         <div>
           <h2>Private test chain</h2>
-          <p>Forked current Ravencoin Core into an independent network. New magic (<code>RUCK</code>), ports 8867 / 8866, <code>K</code> addresses, burn addresses, genesis. Built a node on Ubuntu in WSL. Mined with KAWPOW. Sent RUCK. Issued <code>TEST_RUCK</code>. Rebranded what people see without changing consensus.</p>
-          <p><strong>Exit check:</strong> a local node can mine, send, and issue an asset. Met.</p>
-          <p><strong>What this is not:</strong> a public launch. The test wallet holds mined coins. Those coins do not become the public supply.</p>
+          <p>Independent test network. New identity (<code>RUCK</code>, <code>K</code> addresses, own genesis). Mining, transfers, and assets work. What people see says RuckCoin.</p>
+          <p><strong>Exit check:</strong> a test node can mine, send, and issue an asset. Met.</p>
+          <p><strong>What this is not:</strong> a public launch. Test coins do not become the public supply.</p>
         </div>
       </article>
 
@@ -64,8 +65,8 @@
         <div class="when">14–18 Aug 2026<br><span class="tag now">Phase 1 · Now</span></div>
         <div>
           <h2>Public record</h2>
-          <p>This website, the white paper (v1.0), and this timeline. Honest status: private test, nothing to buy.</p>
-          <p><strong>Exit check:</strong> anyone can open the site, read the paper, and see the same frozen parameters as <code>doc/LAUNCH_SPEC.md</code>.</p>
+          <p>This website, white paper v1.1, veterans-fund policy, and this timeline. Honest status: private test, nothing to buy, no veterans address yet.</p>
+          <p><strong>Exit check:</strong> anyone can open the site, read the paper, and see the same frozen money rules.</p>
         </div>
       </article>
 
@@ -73,14 +74,12 @@
         <div class="when">late Aug – mid Sep 2026<br><span class="tag next">Phase 2 · Next</span></div>
         <div>
           <h2>A wallet people can actually use</h2>
-          <p>Linux Qt did not appear on the Windows desktop. The current local page only shows balances.</p>
           <ul>
-            <li>A local wallet UI: receive address, send RUCK, assets</li>
-            <li>A desktop shortcut that starts the node and opens that UI</li>
-            <li>A simple local explorer (height, txid, <code>K</code> address)</li>
-            <li>Written miner notes for the one-node setup</li>
+            <li>Official wallet: receive, send RUCK, assets</li>
+            <li>Optional veterans donation on send (off unless you turn it on)</li>
+            <li>A simple explorer (height, txid, <code>K</code> address)</li>
           </ul>
-          <p><strong>Exit check:</strong> a person who is not us can receive, send, and issue an asset on the test node without using raw RPC.</p>
+          <p><strong>Exit check:</strong> someone who is not us can receive, send, and issue an asset without raw commands.</p>
         </div>
       </article>
 
@@ -94,6 +93,7 @@
             <li>Tagged source and binaries (at least Linux; Windows if the wallet is ready)</li>
             <li>This website and GitHub showing the same genesis hash</li>
             <li>One honest public seed if we are willing to keep it up</li>
+            <li>Veterans address printed on this site the same day</li>
           </ul>
           <p><strong>Exit check:</strong> a stranger can download software, mine or receive a first coin, and verify genesis against this site.</p>
           <div class="note alert">
@@ -109,10 +109,10 @@
           <ul>
             <li>2–3 seed nodes (small VPS, port 8867). Hostnames go into <code>vSeeds</code>.</li>
             <li>A public explorer</li>
-            <li>GPU / stratum instructions that do not assume our living room</li>
-            <li>A published veterans donation address and a one-page report of how inflows will be shown</li>
+            <li>Public GPU / stratum instructions</li>
+            <li>A running outflow log on the veterans page</li>
           </ul>
-          <p><strong>Exit check:</strong> a new peer can find the network without knowing our home IP.</p>
+          <p><strong>Exit check:</strong> a new peer can find the network from published seeds.</p>
         </div>
       </article>
 
@@ -129,7 +129,7 @@
     <h2>Not on the calendar</h2>
     <ul>
       <li>Masternodes, staking, an ICO date</li>
-      <li>A built-in veterans tax</li>
+      <li>A built-in veterans tax, or a lock until a price</li>
       <li>“Listing on a major exchange by Q4”</li>
       <li>A second coin, an NFT marketplace, or a mobile app before a working desktop wallet</li>
     </ul>

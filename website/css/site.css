@@ -394,6 +394,29 @@ th {
 .toc ol { margin: .4rem 0 0; padding-left: 1.2rem; }
 .toc a { text-decoration: none; }
 
+.addr-box {
+  background: var(--plate);
+  color: var(--stitch);
+  border: 2px solid var(--brass);
+  padding: 1.1rem 1.15rem;
+  margin: 1rem 0 1.6rem;
+}
+.addr-box .label {
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin: 0 0 .45rem;
+}
+.addr-box .empty {
+  font-family: var(--display);
+  font-size: 1.35rem;
+  letter-spacing: .04em;
+  margin: 0;
+}
+.addr-box p { margin: .55rem 0 0; color: #c9c2ae; font-size: 1rem; }
+
 .faq details {
   background: var(--paper);
   border: 1px solid var(--ink);

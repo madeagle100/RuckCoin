@@ -84,7 +84,12 @@ Skip the DEX until there is a real reason. Launch does not depend on it.
 
 No masternodes, no built-in veterans payout, no staking, no scheduled supply burn, no DEX, no premine.
 
-Veterans / governance, if you still want it, is social (a published donation address after launch), not a hidden genesis wallet.
+Veterans support is **option A** (social, not consensus):
+
+- One published address at public launch, listed on `website/veterans.html`.
+- Official wallet may offer an optional donation (off by default).
+- No fee tax, no block-reward skim, no lock until a price or “the coin grows.”
+- Outflows to real aid get a public txid. Until the address is on the site, there is no official fund.
 
 ## Network posture
 

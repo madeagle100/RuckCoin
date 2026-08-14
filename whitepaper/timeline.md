@@ -46,7 +46,7 @@ We will not publish a token price, an exchange listing date, or a “guaranteed�
 **What we ship**
 
 - Public-facing website that a non-technical person can read.
-- This white paper (v1.0) and this timeline.
+- This white paper (v1.1) and this timeline.
 - Honest status: private test, nothing to buy.
 
 **Exit check:** Anyone can open the site, read the paper, and see the same frozen parameters as `doc/LAUNCH_SPEC.md`.
@@ -58,16 +58,14 @@ We will not publish a token price, an exchange listing date, or a “guaranteed�
 **When:** late August – mid September 2026  
 **Status:** Next
 
-Linux Qt did not appear on the Windows desktop. The current local page only shows balances.
-
 **What we ship**
 
-- A local wallet UI that can show a receive address, send RUCK, and handle assets.
-- A desktop shortcut that starts the node and opens that UI.
-- A simple local explorer (height, txid, `K` address).
-- Written miner notes for the one-node setup (already partly working).
+- Official wallet: receive address, send RUCK, assets.
+- On send: optional veterans donation (off unless the user turns it on).
+- A simple explorer (height, txid, `K` address).
+- A desktop start path for the node plus that wallet.
 
-**Exit check:** A person who is not us can receive, send, and issue an asset on the test node without using raw RPC.
+**Exit check:** Someone who is not us can receive, send, and issue an asset without using raw commands.
 
 ---
 
@@ -83,6 +81,7 @@ Linux Qt did not appear on the Windows desktop. The current local page only show
 - Tagged source + binaries (at least Linux; Windows if the wallet is ready).
 - The website and GitHub showing the same genesis hash.
 - One honest public seed if we are willing to keep it up; more only if needed.
+- The veterans address printed on the public site (same day). No price lock on that fund.
 
 **Exit check:** A stranger can download software, mine or receive a first coin, and verify genesis against this site.
 
@@ -99,10 +98,10 @@ Linux Qt did not appear on the Windows desktop. The current local page only show
 
 - 2–3 seed nodes (small VPS, port 8867 open). Hostnames go into `vSeeds`.
 - A public explorer.
-- Clear GPU / stratum instructions that do not assume our living room.
-- A published veterans donation address and a one-page “how we will report inflows.”
+- Public GPU / stratum instructions.
+- A running outflow log on the veterans page.
 
-**Exit check:** A new peer can find the network without knowing our home IP.
+**Exit check:** A new peer can find the network from published seeds, not from a private machine.
 
 ---
 

@@ -20,6 +20,7 @@ Then visit http://127.0.0.1:8765/
 | `learn.html` | Plain-language walkthrough |
 | `paper.html` | White paper v1.0 |
 | `timeline.html` | March route |
+| `veterans.html` | Fund policy and (later) the public address |
 | `spec.html` | Frozen numbers |
 | `faq.html` | Short answers |
 
