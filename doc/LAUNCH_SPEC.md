@@ -86,6 +86,18 @@ No masternodes, no built-in veterans payout, no staking, no scheduled supply bur
 
 Veterans / governance, if you still want it, is social (a published donation address after launch), not a hidden genesis wallet.
 
+## Network posture
+
+**One local test node for now.** Extra public seeds only if the coin actually gets miners. That is enough to test wallets, RPC, assets, and (later) a GPU miner against `127.0.0.1:8867`.
+
+| Role | Where |
+| --- | --- |
+| Test daemon | Ubuntu WSL: `/root/src/ruckcoin/src/ravend -datadir=/root/.ruck` |
+| P2P | `127.0.0.1:8867` |
+| RPC | `127.0.0.1:8866` (user `ruck` / pass `ruckdev`, localhost only) |
+
+When you add seeds later: 2–3 VPS, open 8867, put hostnames in `vSeeds`, rebuild. Do not announce a public network on a single home PC.
+
 ## Still TODO before a public announcement
 
-See the launch plan: three seed nodes, Windows `ruck-qt`, GPU/stratum mining, explorer, launch-day clock at height 0.
+Windows `ruck-qt`, a working GPU/stratum path, an explorer, and a launch-day clock at height 0. More seed nodes only if it takes off.

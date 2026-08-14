@@ -6,6 +6,8 @@ This tree is based on current Ravencoin Core (`master` as of 2026-08) and rebran
 
 Launch identity, economics, and burn addresses: [doc/LAUNCH_SPEC.md](doc/LAUNCH_SPEC.md). **You do not need to put cash in to launch** — this is a mineable chain.
 
+One local test node for now. Extra public seeds only if it takes off. From PowerShell: `contrib/test-node.ps1 status`
+
 ## Coin parameters
 
 | Parameter | Value |
