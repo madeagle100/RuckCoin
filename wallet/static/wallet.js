@@ -46,9 +46,20 @@
 
   function paint(data) {
     state = data;
-    $("offline").hidden = true;
+    $("no-node").hidden = true;
     $("home-ok").hidden = false;
-    $("tape").textContent = "Connected · height " + data.height + " · this computer only";
+    var net = data.network || {};
+    var offline = net.active === false;
+    var peers = net.connections || 0;
+    if (offline) {
+      $("tape").textContent = "Offline mode · height " + data.height + " · this computer only, no other peers";
+      $("net-note").className = "note";
+      $("net-copy").innerHTML = "<strong>Offline.</strong> This computer is not talking to other RuckCoin computers. You can still see your address and the last balance it knows. New incoming payments wait until you go back online.";
+    } else {
+      $("tape").textContent = "Local wallet · height " + data.height + " · " + peers + " other computer" + (peers === 1 ? "" : "s") + " connected";
+      $("net-note").className = "note";
+      $("net-copy").innerHTML = "<strong>Local only for this window.</strong> The wallet itself never uses a website. The node on this PC is allowed to talk to " + peers + " other RuckCoin computer" + (peers === 1 ? "" : "s") + ". Use Settings if you want that off too.";
+    }
     setAddr("home-addr", data.address);
     setAddr("recv-addr", data.address);
     setAddr("mine-addr", data.address);
@@ -84,6 +95,8 @@
       }).join("") + "</ul>";
     }
     if (data.veterans_address) $("vets").value = data.veterans_address;
+    var sendWarn = $("send-offline-warn");
+    if (sendWarn) sendWarn.hidden = !offline;
   }
 
   function load() {
@@ -91,9 +104,9 @@
       if (!data.ok) throw new Error(data.error || "Could not load wallet.");
       paint(data);
     }).catch(function (err) {
-      $("offline").hidden = false;
+      $("no-node").hidden = false;
       $("home-ok").hidden = true;
-      $("tape").textContent = "Not connected to a node yet.";
+      $("tape").textContent = "Waiting for the node on this computer.";
       toast(err.message || String(err), true);
     });
   }
@@ -113,6 +126,23 @@
     el.addEventListener("click", function () { copyText(el.getAttribute("data-copy")); });
   });
   $("retry").addEventListener("click", load);
+  function setNet(offline) {
+    post("/api/offline", { offline: offline }).then(function (res) {
+      var box = $("offline-result");
+      box.hidden = false;
+      if (!res.ok) {
+        box.className = "note warn";
+        box.textContent = res.error;
+        return toast(res.error, true);
+      }
+      box.className = "note";
+      box.textContent = res.message;
+      toast(offline ? "Offline." : "Other computers allowed.");
+      load();
+    });
+  }
+  $("go-offline").addEventListener("click", function () { setNet(true); });
+  $("go-online").addEventListener("click", function () { setNet(false); });
   $("donate").addEventListener("change", function () {
     $("donate-extra").hidden = !$("donate").checked;
   });

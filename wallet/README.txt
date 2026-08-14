@@ -26,6 +26,14 @@ Assets   Named tokens, if you have any
 Mine     Optional. How new coins are created. You can skip this.
 Settings Where the node lives on this computer
 
+Offline
+-------
+The wallet never uses a website. It only talks to the node on this computer.
+In Settings you can turn on "Use offline" so the node also stops talking
+to other people's computers. You can still see your address and last
+known balance. New incoming payments and a send that the other person
+can see wait until you turn other computers back on.
+
 Safety
 ------
 - Never send your node password to a stranger.

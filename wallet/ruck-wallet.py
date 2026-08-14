@@ -123,6 +123,10 @@ def overview() -> dict:
     except Exception:
         mining = {}
     try:
+        net = rpc("getnetworkinfo")
+    except Exception:
+        net = {}
+    try:
         assets = rpc("listmyassets")
     except Exception:
         assets = {}
@@ -177,6 +181,10 @@ def overview() -> dict:
             "difficulty": mining.get("difficulty"),
             "networkhashps": mining.get("networkhashps"),
             "pooledtx": mining.get("pooledtx"),
+        },
+        "network": {
+            "active": bool(net.get("networkactive", True)),
+            "connections": int(net.get("connections") or 0),
         },
     }
 
@@ -311,6 +319,23 @@ class Handler(BaseHTTPRequestHandler):
                     )
                 txid = rpc("transfer", [name, qty, dest])
                 return json_out(self, 200, {"ok": True, "txid": txid})
+            if path == "/api/offline":
+                want_offline = bool(body.get("offline"))
+                # false = stay off the public network; true = allow peers
+                active = rpc("setnetworkactive", [not want_offline])
+                return json_out(
+                    self,
+                    200,
+                    {
+                        "ok": True,
+                        "offline": not bool(active),
+                        "message": (
+                            "This computer will not talk to other RuckCoin computers until you turn the internet back on."
+                            if want_offline
+                            else "This computer may talk to other RuckCoin computers again."
+                        ),
+                    },
+                )
             if path == "/api/mine":
                 with _cfg_lock:
                     addr = _cfg.get("receive_address") or ""
