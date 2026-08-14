@@ -47,7 +47,7 @@
 #endif
 
 const int RAVEN_IPC_CONNECT_TIMEOUT = 1000; // milliseconds
-const QString RAVEN_IPC_PREFIX("raven:");
+const QString RAVEN_IPC_PREFIX("ruck:");
 // BIP70 payment protocol messages
 const char* BIP70_MESSAGE_PAYMENTACK = "PaymentACK";
 const char* BIP70_MESSAGE_PAYMENTREQUEST = "PaymentRequest";

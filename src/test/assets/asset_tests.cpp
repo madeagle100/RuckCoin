@@ -48,7 +48,7 @@ BOOST_FIXTURE_TEST_SUITE(asset_tests, BasicTestingSetup)
         BOOST_CHECK(!IsAssetNameValid("AB_.C", type));
 
         //- Versions of RAVENCOIN NOT allowed
-        BOOST_CHECK(!IsAssetNameValid("RVN", type));
+        BOOST_CHECK(!IsAssetNameValid("RUCK", type));
         BOOST_CHECK(!IsAssetNameValid("RAVEN", type));
         BOOST_CHECK(!IsAssetNameValid("RAVENCOIN", type));
 

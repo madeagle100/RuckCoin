@@ -1499,7 +1499,7 @@ void RavenGUI::incomingTransaction(const QString& date, int unit, const CAmount&
 {
     // On new transaction, make an info balloon
     QString msg = tr("Date: %1\n").arg(date);
-    if (assetName == "RVN")
+    if (assetName == "RUCK")
         msg += tr("Amount: %1\n").arg(RavenUnits::formatWithUnit(unit, amount, true));
     else
         msg += tr("Amount: %1\n").arg(RavenUnits::formatWithCustomName(assetName, amount, MAX_ASSET_UNITS, true));
