@@ -1,7 +1,7 @@
 # Control the single local RuckCoin test node in Ubuntu WSL.
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("start", "stop", "status", "address")]
+    [ValidateSet("start", "stop", "status", "address", "mine")]
     [string]$Command = "status"
 )
 
@@ -21,5 +21,11 @@ switch ($Command) {
     }
     "address" {
         wsl @wsl bash -lc "$cli getnewaddress"
+    }
+    "mine" {
+        Start-Process python -ArgumentList "$PSScriptRoot\..\miners\ravencoin-stratum-proxy\stratum-converter.py","54325","127.0.0.1","ruck","ruckdev","8866","true" -WindowStyle Minimized
+        Start-Sleep 2
+        $exe = Join-Path $PSScriptRoot "..\miners\kawpowminer\kawpowminer-windows-1.2.4\kawpowminer.exe"
+        Start-Process -FilePath $exe -ArgumentList "-P","stratum+tcp://KEPRbPbSLRbS3r6VaaXxH1MizfB9b97cc7.rig1@127.0.0.1:54325"
     }
 }
