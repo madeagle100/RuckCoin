@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RuckCoin wallet</title>
+  <link rel="icon" href="/static/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/wallet.css">
+</head>
+<body>
+  <div class="app">
+    <div class="tape" id="tape">This wallet talks only to a RuckCoin node on this computer. Keep the wallet window running.</div>
+    <aside class="side">
+      <div class="brand">
+        <img src="/static/mark.svg" alt="">
+        <div><b>RUCKCOIN</b><small>YOUR WALLET</small></div>
+      </div>
+      <nav class="nav" aria-label="Wallet">
+        <button type="button" data-go="home" aria-current="true">Home</button>
+        <button type="button" data-go="receive">Receive</button>
+        <button type="button" data-go="send">Send</button>
+        <button type="button" data-go="activity">Activity</button>
+        <button type="button" data-go="assets">Assets</button>
+        <button type="button" data-go="mine">Mine <span class="hint" style="display:inline;padding:0;color:#b08d3e">optional</span></button>
+        <button type="button" data-go="settings">Settings</button>
+      </nav>
+    </aside>
+    <main class="main">
+      <section class="panel on" id="home">
+        <p class="kicker">Start here</p>
+        <h1>Your RuckCoin wallet</h1>
+        <p class="lede">This app holds the keys to <em>your</em> coins. Think of your address as a mailbox number. People send RUCK to it. Only this wallet can open that mailbox.</p>
+        <div class="note" id="offline">
+          <p><strong>Waiting for the node.</strong> A wallet needs the RuckCoin node running on this computer, like an app needs the internet. Open <em>3 Start Node</em> from your RuckCoin desktop folder, then click Retry.</p>
+          <p><button class="btn" type="button" id="retry">Retry</button></p>
+        </div>
+        <div id="home-ok" hidden>
+          <div class="plate">
+            <div class="lab">Your address — give this out to get paid</div>
+            <div class="addr" id="home-addr">…</div>
+            <div class="actions">
+              <button class="btn ghost" type="button" data-copy="home-addr">Copy address</button>
+              <button class="btn ghost" type="button" data-go="receive">How receiving works</button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="card"><div class="lab">You can spend</div><div class="val" id="bal">—</div></div>
+            <div class="card"><div class="lab">Still waiting (new blocks)</div><div class="val" id="imm">—</div></div>
+            <div class="card"><div class="lab">Chain height</div><div class="val" id="hgt">—</div></div>
+          </div>
+          <h2>What the numbers mean</h2>
+          <p><strong>You can spend</strong> is money that is fully yours now. <strong>Still waiting</strong> is usually coins from a brand-new mined block — they unlock after more blocks are added. That is normal, not a bug.</p>
+          <ol class="steps">
+            <li><strong>Receive</strong> Copy your address and give it to someone (or to yourself as a test).</li>
+            <li><strong>Send</strong> Pay a K address. Sends cannot be undone.</li>
+            <li><strong>Mine</strong> Optional. Creates new coins if you find a block. You do not need to mine to use this wallet.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="panel" id="receive">
+        <p class="kicker">Get coins</p>
+        <h1>Receive RUCK</h1>
+        <p class="lede">Give people this address. It always starts with <strong>K</strong>. If someone sends to an address that starts with R, that is Ravencoin — those coins will not arrive here.</p>
+        <div class="plate">
+          <div class="lab">Your receive address</div>
+          <div class="addr" id="recv-addr">…</div>
+          <div class="actions">
+            <button class="btn" type="button" data-copy="recv-addr">Copy address</button>
+            <button class="btn ghost" type="button" id="new-addr">Make a new address</button>
+          </div>
+        </div>
+        <div class="note">
+          <p><strong>You can have more than one address.</strong> They all belong to this wallet. Use a new one if you want a fresh mailbox. Old ones still work.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="send">
+        <p class="kicker">Pay someone</p>
+        <h1>Send RUCK</h1>
+        <p class="lede">Paste the other person’s K address and an amount. There is no undo and no bank to call.</p>
+        <div class="note warn">
+          <p>Double-check the first letter is <strong>K</strong>. Never send because a stranger in a chat told you to.</p>
+        </div>
+        <form id="send-form">
+          <label for="to">Their address</label>
+          <input id="to" name="to" type="text" autocomplete="off" spellcheck="false" placeholder="K…">
+          <label for="amount">Amount in RUCK</label>
+          <input id="amount" name="amount" type="number" min="0" step="0.00000001" placeholder="0">
+          <label class="check"><input id="donate" type="checkbox"> Also send a donation to the veterans fund (optional, off unless you check this)</label>
+          <div id="donate-extra" hidden>
+            <label for="donate-amt">Donation amount in RUCK</label>
+            <input id="donate-amt" type="number" min="0" step="0.00000001" value="1">
+            <p class="empty">The official fund address is set in Settings after public launch. If it is blank, leave this unchecked.</p>
+          </div>
+          <p class="actions"><button class="btn" type="submit">Send</button></p>
+        </form>
+        <p id="send-result" class="note" hidden></p>
+      </section>
+
+      <section class="panel" id="activity">
+        <p class="kicker">What happened</p>
+        <h1>Activity</h1>
+        <p class="lede">A short list of money that moved in this wallet. “Mined” means a block reward. “Received” means someone paid you. “Sent” means you paid someone.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>When</th><th>What</th><th>Amount</th><th>ID</th></tr></thead>
+            <tbody id="tx-body"><tr><td colspan="4" class="empty">Nothing yet.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="assets">
+        <p class="kicker">Named things</p>
+        <h1>Assets</h1>
+        <p class="lede">An asset is a named token on the same chain — a ticket, a membership, an item. RUCK is still the money you use for fees.</p>
+        <div id="asset-list" class="empty">No assets in this wallet yet.</div>
+        <h2>Send an asset</h2>
+        <form id="xfer-form">
+          <label for="asset-name">Asset name</label>
+          <input id="asset-name" type="text" spellcheck="false" placeholder="NAME">
+          <label for="asset-qty">How many</label>
+          <input id="asset-qty" type="number" min="0" step="0.00000001">
+          <label for="asset-to">Their K address</label>
+          <input id="asset-to" type="text" spellcheck="false" placeholder="K…">
+          <p class="actions"><button class="btn" type="submit">Send asset</button></p>
+        </form>
+      </section>
+
+      <section class="panel" id="mine">
+        <p class="kicker">Optional</p>
+        <h1>Mining, in plain words</h1>
+        <p class="lede">Mining is how <em>new</em> RUCK is created. Computers guess at a hard puzzle. The one that finds the answer writes the next page of the notebook and is paid 5,000 RUCK. You do <strong>not</strong> need to mine to receive, hold, or send coins.</p>
+        <div class="note">
+          <p><strong>First time?</strong> Skip this tab until you have received or sent once. Come back when you want to try creating a coin yourself.</p>
+        </div>
+        <div class="plate">
+          <div class="lab">If you mine, winnings go to your address</div>
+          <div class="addr" id="mine-addr">…</div>
+          <div class="actions">
+            <button class="btn ghost" type="button" data-copy="mine-addr">Copy miner address</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="card"><div class="lab">Network puzzle (difficulty)</div><div class="val" id="diff">—</div></div>
+          <div class="card"><div class="lab">Waiting transactions</div><div class="val" id="pool">—</div></div>
+        </div>
+        <h2>Try on this computer</h2>
+        <p>This makes a short attempt with your CPU. On KAWPOW that is usually too slow to win. It is here so you can see the steps, not to get rich.</p>
+        <p class="actions"><button class="btn" type="button" id="try-mine">Try one short attempt</button></p>
+        <p id="mine-result" class="note" hidden></p>
+        <h2>Faster mining (graphics card)</h2>
+        <p>Serious mining uses a GPU miner pointed at your node and <em>your</em> address. After public launch we will publish exact steps. For the private test, use the Mine button in your RuckCoin desktop folder if you already set that up.</p>
+      </section>
+
+      <section class="panel" id="settings">
+        <p class="kicker">This computer</p>
+        <h1>Settings</h1>
+        <p class="lede">The wallet does not store the whole chain. It asks your local node. These boxes tell it where that node is. Leave them as they are if you used the RuckCoin desktop starters.</p>
+        <form id="conn-form">
+          <label for="host">Node address</label>
+          <input id="host" type="text" value="127.0.0.1">
+          <label for="port">Node port</label>
+          <input id="port" type="number" value="8866">
+          <label for="user">Node user</label>
+          <input id="user" type="text" value="ruck" autocomplete="off">
+          <label for="password">Node password</label>
+          <input id="password" type="password" placeholder="unchanged if left blank" autocomplete="off">
+          <label for="vets">Veterans fund address (paste only from ruckcoin.org / this project’s site)</label>
+          <input id="vets" type="text" placeholder="Not published yet">
+          <p class="actions"><button class="btn" type="submit">Save and test connection</button></p>
+        </form>
+        <p id="conn-result" class="note" hidden></p>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="/static/wallet.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Download the RuckCoin wallet</title>
+  <meta name="description" content="Download the official RuckCoin wallet. Made for first-time users. Your address, send, receive, optional mining. Needs a local node.">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="tape">Private test. The public network is not open. This wallet talks to a node on your computer.</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="img/mark.svg" alt="">
+        <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <ul class="nav-links" id="menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="learn.html">How it works</a></li>
+        <li><a href="paper.html">White paper</a></li>
+        <li><a href="timeline.html">Timeline</a></li>
+        <li><a href="veterans.html">Veterans</a></li>
+        <li><a href="wallet.html" aria-current="page">Wallet</a></li>
+        <li><a href="spec.html">Spec</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <p class="kicker">For your computer</p>
+    <h1>The wallet</h1>
+    <p class="lede">This is the official RuckCoin wallet. It is built for people who have never used a coin before. Your address is on the first screen. Receive, send, and activity are in plain words. Mining is optional and explained before you click anything.</p>
+
+    <div class="note">
+      <p><strong>What you need.</strong> A RuckCoin node running on the same computer (the program that keeps the notebook). The wallet is the friendly window. The node is the engine. After public launch we will ship a one-click pack. Today: start the node, then open the wallet.</p>
+    </div>
+
+    <p class="actions">
+      <a class="btn" href="downloads/ruckcoin-wallet.zip">Download wallet</a>
+      <a class="btn ghost" href="learn.html">How RuckCoin works</a>
+    </p>
+
+    <h2>After you download</h2>
+    <ol class="steps">
+      <li>
+        <div>
+          <h3>Unzip the folder</h3>
+          <p>Keep the files together. Double-click <code>Open Wallet.bat</code> on Windows, or run <code>python ruck-wallet.py</code>.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Your browser opens to your address</h3>
+          <p>That long K… string is your mailbox. Copy it when someone should pay you. Never type it from memory.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Skip Mine until you are curious</h3>
+          <p>You do not need to mine to hold or send RUCK. Mining is how new coins are created. The Mine tab explains it first.</p>
+        </div>
+      </li>
+    </ol>
+
+    <h2>What is inside</h2>
+    <div class="truths">
+      <article class="card"><h3>Home</h3><p>Your address, what you can spend, and what is still waiting to unlock.</p></article>
+      <article class="card"><h3>Receive / Send</h3><p>Get paid. Pay someone. Optional veterans donation stays off unless you check it.</p></article>
+      <article class="card"><h3>Mine</h3><p>Optional. Point work at <em>your</em> address. A short CPU try is included so you can see the idea.</p></article>
+    </div>
+  </main>
+  <footer class="site-foot">
+    <div class="wrap">
+      <strong>RuckCoin</strong>
+      <small>Not an offer to sell coins. The wallet only listens on this computer.</small>
+    </div>
+  </footer>
+  <script src="js/site.js"></script>
+</body>
+</html>
