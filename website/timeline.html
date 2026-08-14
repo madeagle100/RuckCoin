@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RuckCoin timeline</title>
+  <meta name="description" content="RuckCoin march route: test chain, public record, wallet, height-0 launch, then seeds only if people show up.">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="tape">Dates after Phase 1 are windows. A phase is done only when its exit check is true.</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="img/mark.svg" alt="">
+        <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <ul class="nav-links" id="menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="learn.html">How it works</a></li>
+        <li><a href="paper.html">White paper</a></li>
+        <li><a href="timeline.html" aria-current="page">Timeline</a></li>
+        <li><a href="spec.html">Spec</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <p class="kicker">March route · last updated 14 August 2026</p>
+    <h1>Timeline</h1>
+    <p class="lede">This is the working calendar. We will not publish a token price, an exchange listing date, or a guaranteed hash rate. If a date slips, we slip the date. We do not quietly change the money rules to look busy.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>How to read</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag done">Done</span></td><td>Finished.</td></tr>
+          <tr><td><span class="tag now">Now</span></td><td>This is the current work.</td></tr>
+          <tr><td><span class="tag next">Next</span></td><td>What we build after the current phase.</td></tr>
+          <tr><td><span class="tag if">If</span></td><td>Only if the condition is real (miners, users, a reason to trade).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="route">
+      <article class="mile done">
+        <div class="when">14 Aug 2026<br><span class="tag done">Phase 0 · Done</span></div>
+        <div>
+          <h2>Private test chain</h2>
+          <p>Forked current Ravencoin Core into an independent network. New magic (<code>RUCK</code>), ports 8867 / 8866, <code>K</code> addresses, burn addresses, genesis. Built a node on Ubuntu in WSL. Mined with KAWPOW. Sent RUCK. Issued <code>TEST_RUCK</code>. Rebranded what people see without changing consensus.</p>
+          <p><strong>Exit check:</strong> a local node can mine, send, and issue an asset. Met.</p>
+          <p><strong>What this is not:</strong> a public launch. The test wallet holds mined coins. Those coins do not become the public supply.</p>
+        </div>
+      </article>
+
+      <article class="mile now">
+        <div class="when">14–18 Aug 2026<br><span class="tag now">Phase 1 · Now</span></div>
+        <div>
+          <h2>Public record</h2>
+          <p>This website, the white paper (v1.0), and this timeline. Honest status: private test, nothing to buy.</p>
+          <p><strong>Exit check:</strong> anyone can open the site, read the paper, and see the same frozen parameters as <code>doc/LAUNCH_SPEC.md</code>.</p>
+        </div>
+      </article>
+
+      <article class="mile">
+        <div class="when">late Aug – mid Sep 2026<br><span class="tag next">Phase 2 · Next</span></div>
+        <div>
+          <h2>A wallet people can actually use</h2>
+          <p>Linux Qt did not appear on the Windows desktop. The current local page only shows balances.</p>
+          <ul>
+            <li>A local wallet UI: receive address, send RUCK, assets</li>
+            <li>A desktop shortcut that starts the node and opens that UI</li>
+            <li>A simple local explorer (height, txid, <code>K</code> address)</li>
+            <li>Written miner notes for the one-node setup</li>
+          </ul>
+          <p><strong>Exit check:</strong> a person who is not us can receive, send, and issue an asset on the test node without using raw RPC.</p>
+        </div>
+      </article>
+
+      <article class="mile">
+        <div class="when">Sep – Oct 2026, after Phase 2<br><span class="tag next">Phase 3</span></div>
+        <div>
+          <h2>Public launch day (height 0)</h2>
+          <ul>
+            <li>A published start time in UTC</li>
+            <li>A chain that begins at height 0 with no spendable premine</li>
+            <li>Tagged source and binaries (at least Linux; Windows if the wallet is ready)</li>
+            <li>This website and GitHub showing the same genesis hash</li>
+            <li>One honest public seed if we are willing to keep it up</li>
+          </ul>
+          <p><strong>Exit check:</strong> a stranger can download software, mine or receive a first coin, and verify genesis against this site.</p>
+          <div class="note alert">
+            <p><strong>Hard rule.</strong> If we skip the reset and call the test wallet the public coin, we have broken the white paper.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="mile">
+        <div class="when">After Phase 3, if used<br><span class="tag if">Phase 4 · If</span></div>
+        <div>
+          <h2>Only if people actually show up</h2>
+          <ul>
+            <li>2–3 seed nodes (small VPS, port 8867). Hostnames go into <code>vSeeds</code>.</li>
+            <li>A public explorer</li>
+            <li>GPU / stratum instructions that do not assume our living room</li>
+            <li>A published veterans donation address and a one-page report of how inflows will be shown</li>
+          </ul>
+          <p><strong>Exit check:</strong> a new peer can find the network without knowing our home IP.</p>
+        </div>
+      </article>
+
+      <article class="mile">
+        <div class="when">Later, only with a reason<br><span class="tag if">Phase 5 · If</span></div>
+        <div>
+          <h2>Markets (optional)</h2>
+          <p>There is no official DEX, CEX, or liquidity plan required to exist. If people want to trade RUCK, that can be a community pair or a pool someone funds with their own cash. The project will not pretend a market is part of consensus.</p>
+          <p><strong>Exit check:</strong> none. Skip forever if there is no reason.</p>
+        </div>
+      </article>
+    </div>
+
+    <h2>Not on the calendar</h2>
+    <ul>
+      <li>Masternodes, staking, an ICO date</li>
+      <li>A built-in veterans tax</li>
+      <li>“Listing on a major exchange by Q4”</li>
+      <li>A second coin, an NFT marketplace, or a mobile app before a working desktop wallet</li>
+    </ul>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <strong>RuckCoin</strong> · same text in <code>whitepaper/timeline.md</code>
+      <small>Not an offer to sell coins.</small>
+    </div>
+  </footer>
+  <script src="js/site.js"></script>
+</body>
+</html>

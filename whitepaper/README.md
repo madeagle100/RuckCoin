@@ -1,3 +1,11 @@
+# RuckCoin papers
+
+- **[RuckCoin white paper v1.0](ruckcoin-whitepaper.md)** — the project paper (plain language). Also on the site: `website/paper.html`.
+- **[Timeline](timeline.md)** — march route with exit checks.
+- Below is the **2018 Ravencoin paper**, kept here because RuckCoin inherits that asset design. It is not the RuckCoin paper.
+
+---
+
 <h1 align="center">
   Ravencoin: A Peer to Peer Electronic System for the Creation and Transfer of Assets<br>
 </h1>

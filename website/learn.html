@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How RuckCoin works — plain language</title>
+  <meta name="description" content="A plain-language walkthrough of mining, wallets, K addresses, assets, and why RuckCoin is not Ravencoin.">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="tape">Private test only. The public network is not open. There is nothing to buy.</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="img/mark.svg" alt="">
+        <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <ul class="nav-links" id="menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="learn.html" aria-current="page">How it works</a></li>
+        <li><a href="paper.html">White paper</a></li>
+        <li><a href="timeline.html">Timeline</a></li>
+        <li><a href="spec.html">Spec</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <p class="kicker">Field brief</p>
+    <h1>How it works</h1>
+    <p class="lede">This page is the kitchen-table version. The <a href="paper.html">white paper</a> is the full version. The <a href="spec.html">spec</a> is the stamped numbers.</p>
+
+    <h2>The notebook</h2>
+    <p>Imagine a notebook that many computers keep a copy of. Every minute or so, someone is allowed to add a page. That page is a <strong>block</strong>. It lists who sent what to whom. The whole stack of pages is the <strong>chain</strong>.</p>
+    <p>To add a page, a miner must solve a hard puzzle. Checking the answer is easy. Finding it takes a lot of graphics-card work. That puzzle is called <strong>KAWPOW</strong> (the same family Ravencoin uses). On average the network wants one new page per minute. If pages start coming too fast, the puzzle gets harder by itself.</p>
+    <div class="note">
+      <p><strong>In one sentence:</strong> new RUCK is created only when a miner wins the right to write the next page. The prize is 5,000 RUCK, until the first halving.</p>
+    </div>
+
+    <h2>Halving, without a chart</h2>
+    <p>Every 2,100,000 blocks — about four years if the clock stays near one minute — the prize is cut in half. The curve stops at 21 billion RUCK. That schedule is copied from the Bitcoin / Ravencoin idea: lots of coins early, then slower, then done. Nobody can print extra from a special key.</p>
+
+    <h2>Your wallet is a key ring</h2>
+    <p>A wallet does not “store coins on the app” the way a game stores gold. It stores <strong>keys</strong>. The chain stores the fact that those keys can spend certain outputs.</p>
+    <p>If you lose the keys, nobody can help you — not us, not a bank. If someone else gets the keys, they can spend the coins. Write the backup down. Do not screenshot it into a chat.</p>
+
+    <h2>Why addresses start with K</h2>
+    <p>A RuckCoin address looks like <code>K…</code> and is fairly long. Ravencoin addresses look like <code>R…</code>. We made them different on purpose so you do not send the wrong coin to the wrong book.</p>
+    <div class="note alert">
+      <p><strong>Never</strong> send Ravencoin (RVN) to a K address, or RuckCoin (RUCK) to an R address. The coins will not arrive. There is no undo button.</p>
+    </div>
+
+    <h2>Assets are named things on the same book</h2>
+    <p>RUCK is the native coin. An <strong>asset</strong> is a name you create, with a quantity you choose. Examples people actually use this design for:</p>
+    <ul>
+      <li>a ticket to an event</li>
+      <li>a membership card that can be transferred</li>
+      <li>a unique item (only one exists)</li>
+      <li>an in-game thing that can leave the game</li>
+    </ul>
+    <p>The first person to create a given name owns that name. Creating it burns a fixed amount of RUCK (500 for a normal name) so squatters cannot register every word for free. The burn goes to an address nobody can spend — including us.</p>
+    <p>The chain does not know if your asset is a concert ticket or a joke. The law in your country still applies. This is not a loophole.</p>
+
+    <h2>What “fork of Ravencoin” means</h2>
+    <p>We copied the Ravencoin software (which itself comes from Bitcoin) and started a <strong>new network</strong>. That is a code fork, not a split of their chain.</p>
+    <ul>
+      <li>Ravencoin peers will not talk to RuckCoin peers. The handshake word is <code>RUCK</code>, not theirs.</li>
+      <li>RVN holders do not get an airdrop.</li>
+      <li>We kept the parts that already work: assets, one-minute blocks, GPU mining.</li>
+      <li>We changed the identity: name, ports, addresses, genesis, seeds.</li>
+    </ul>
+
+    <h2>Veterans — the honest version</h2>
+    <p>We did <em>not</em> put a veterans tax on every block. We did <em>not</em> mint a foundation pile at the first block. Those tricks look generous and are usually a premine with better copy.</p>
+    <p>After the public start we will publish one donation address. Anyone can send to it. Anyone can watch it. If we later burn part of what that address receives, we will publish the transaction. If we do not, you will be able to say so.</p>
+
+    <h2>What you should not do today</h2>
+    <ul>
+      <li>Do not buy “RUCK” from a stranger.</li>
+      <li>Do not treat the private test wallet as the public coin. It will be reset.</li>
+      <li>Do not announce this as a live network. It is one test node.</li>
+    </ul>
+    <p>When Phase 3 is done, this page will say so, with a start time and a genesis hash you can check.</p>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <strong>RuckCoin</strong> · <a href="paper.html">White paper</a> · <a href="faq.html">FAQ</a>
+      <small>Not an offer to sell coins.</small>
+    </div>
+  </footer>
+  <script src="js/site.js"></script>
+</body>
+</html>

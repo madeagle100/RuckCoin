@@ -101,4 +101,4 @@ When you add seeds later: 2–3 VPS, open 8867, put hostnames in `vSeeds`, rebui
 
 ## Still TODO before a public announcement
 
-Windows `ruck-qt`, a working GPU/stratum path, an explorer, and a launch-day clock at height 0. More seed nodes only if it takes off.
+Public site, white paper, and timeline: done (`website/`). Still needed: a wallet people can click, a local explorer, and a launch-day clock at height 0. GPU/stratum already works on the local test node. More seed nodes only if it takes off.
