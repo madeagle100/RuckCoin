@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Look up a block or address — RuckCoin</title>
+  <meta name="description" content="Simple RuckCoin explorer. Look up a block number, payment id, or K address on your local node.">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="tape">This page reads your local node through the wallet on this computer. Start the wallet first.</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="img/mark.svg" alt="">
+        <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <ul class="nav-links" id="menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="learn.html">How it works</a></li>
+        <li><a href="paper.html">White paper</a></li>
+        <li><a href="timeline.html">Timeline</a></li>
+        <li><a href="veterans.html">Veterans</a></li>
+        <li><a href="wallet.html">Wallet</a></li>
+        <li><a href="explore.html" aria-current="page">Look up</a></li>
+        <li><a href="spec.html">Spec</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <p class="kicker">Simple explorer</p>
+    <h1>Look something up</h1>
+    <p class="lede">Paste a block number, a payment id, or a K address. This uses the wallet on this computer (port 8870). If nothing comes back, start the wallet first.</p>
+    <p><a class="btn ghost" href="http://127.0.0.1:8870/">Open the wallet look-up tab</a></p>
+    <form id="f">
+      <p><input id="q" type="text" style="width:100%;max-width:36rem;padding:.6rem" placeholder="337  or  K…  or  payment id" spellcheck="false"></p>
+      <p><button class="btn" type="submit">Look up</button></p>
+    </form>
+    <div id="out" class="note" hidden></div>
+  </main>
+  <footer class="site-foot"><div class="wrap"><strong>RuckCoin</strong></div></footer>
+  <script src="js/site.js"></script>
+  <script>
+    document.getElementById("f").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var q = document.getElementById("q").value.trim();
+      var out = document.getElementById("out");
+      out.hidden = false;
+      out.textContent = "Looking…";
+      fetch("http://127.0.0.1:8870/api/lookup?q=" + encodeURIComponent(q))
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res.ok) { out.textContent = res.error || "Not found."; return; }
+          if (res.kind === "block") out.textContent = "Block " + res.height + " — " + res.hash + " — " + res.txcount + " payment(s).";
+          else if (res.kind === "address") out.textContent = res.address + " can spend " + res.balance + " RUCK.";
+          else if (res.kind === "tx") out.textContent = "Payment " + res.txid + " — " + (res.confirmations || 0) + " confirmation(s).";
+        })
+        .catch(function () {
+          out.textContent = "Could not reach the wallet. Start it (desktop: 0 Start RuckCoin or 2 Open Wallet), then try again.";
+        });
+    });
+  </script>
+</body>
+</html>

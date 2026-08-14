@@ -177,6 +177,51 @@
       load();
     });
   });
+  $("look-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var q = $("look-q").value.trim();
+    var box = $("look-out");
+    box.hidden = false;
+    box.innerHTML = "<p class='empty'>Looking…</p>";
+    fetch("/api/lookup?q=" + encodeURIComponent(q)).then(function (r) { return r.json(); }).then(function (res) {
+      if (!res.ok) {
+        box.innerHTML = "<div class='note warn'><p>" + (res.error || "Not found.") + "</p></div>";
+        return;
+      }
+      if (res.kind === "block") {
+        box.innerHTML = "<div class='plate'><div class='lab'>Block</div><div class='val'>" + res.height + "</div><div class='addr'>" + res.hash + "</div><p>" + (res.txcount || 0) + " payment(s) in this page.</p></div>";
+        return;
+      }
+      if (res.kind === "address") {
+        box.innerHTML = "<div class='plate'><div class='lab'>Address</div><div class='addr'>" + res.address + "</div><p>Can spend: <strong>" + money(res.balance) + "</strong></p><p>Ever received: " + money(res.received) + "</p></div>";
+        return;
+      }
+      if (res.kind === "tx") {
+        var outs = (res.vout || []).length;
+        box.innerHTML = "<div class='plate'><div class='lab'>Payment</div><div class='addr'>" + res.txid + "</div><p>Confirmations: <strong>" + (res.confirmations || 0) + "</strong></p><p>Outputs: " + outs + "</p></div>";
+      }
+    }).catch(function (err) {
+      box.innerHTML = "<div class='note warn'><p>" + (err.message || err) + "</p></div>";
+    });
+  });
+  $("issue-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var box = $("issue-result");
+    box.hidden = false;
+    box.className = "note";
+    box.textContent = "Creating… this spends 500 RUCK.";
+    post("/api/issue", { name: $("issue-name").value, qty: $("issue-qty").value }).then(function (res) {
+      if (!res.ok) {
+        box.className = "note warn";
+        box.textContent = res.error;
+        return toast(res.error, true);
+      }
+      box.className = "note";
+      box.textContent = res.message + " Payment id: " + res.txid;
+      toast("Asset created.");
+      load();
+    });
+  });
   $("xfer-form").addEventListener("submit", function (e) {
     e.preventDefault();
     post("/api/transfer", {

@@ -20,6 +20,7 @@
         <button type="button" data-go="receive">Receive</button>
         <button type="button" data-go="send">Send</button>
         <button type="button" data-go="activity">Activity</button>
+        <button type="button" data-go="explore">Look up</button>
         <button type="button" data-go="assets">Assets</button>
         <button type="button" data-go="mine">Mine <span class="hint" style="display:inline;padding:0;color:#b08d3e">optional</span></button>
         <button type="button" data-go="settings">Settings</button>
@@ -56,6 +57,7 @@
           <ol class="steps">
             <li><strong>Receive</strong> Copy your address and give it to someone (or to yourself as a test).</li>
             <li><strong>Send</strong> Pay a K address. Sends cannot be undone.</li>
+            <li><strong>Look up</strong> Paste a block number, a payment id, or a K address to see what the notebook says.</li>
             <li><strong>Mine</strong> Optional. Creates new coins if you find a block. You do not need to mine to use this wallet.</li>
           </ol>
         </div>
@@ -116,11 +118,33 @@
         </div>
       </section>
 
+      <section class="panel" id="explore">
+        <p class="kicker">The public notebook</p>
+        <h1>Look something up</h1>
+        <p class="lede">This is a simple explorer. Paste a <strong>block number</strong> (like 337), a long <strong>payment id</strong>, or a <strong>K address</strong>. You are reading the same book every node keeps.</p>
+        <form id="look-form">
+          <label for="look-q">What do you want to see?</label>
+          <input id="look-q" type="text" spellcheck="false" placeholder="337  or  K…  or  a payment id">
+          <p class="actions"><button class="btn" type="submit">Look up</button></p>
+        </form>
+        <div id="look-out" hidden></div>
+      </section>
+
       <section class="panel" id="assets">
         <p class="kicker">Named things</p>
         <h1>Assets</h1>
         <p class="lede">An asset is a named token on the same chain — a ticket, a membership, an item. RUCK is still the money you use for fees.</p>
         <div id="asset-list" class="empty">No assets in this wallet yet.</div>
+        <h2>Create a new name</h2>
+        <p>First person to create a name owns it. That costs <strong>500 RUCK</strong>, which is burned (nobody can spend it, including you). You also get a special owner token called <code>NAME!</code>.</p>
+        <form id="issue-form">
+          <label for="issue-name">Name (letters and numbers)</label>
+          <input id="issue-name" type="text" spellcheck="false" placeholder="TICKET">
+          <label for="issue-qty">How many to create</label>
+          <input id="issue-qty" type="number" min="1" step="1" value="100">
+          <p class="actions"><button class="btn" type="submit">Create asset (costs 500 RUCK)</button></p>
+        </form>
+        <p id="issue-result" class="note" hidden></p>
         <h2>Send an asset</h2>
         <form id="xfer-form">
           <label for="asset-name">Asset name</label>
