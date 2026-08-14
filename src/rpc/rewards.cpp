@@ -345,7 +345,7 @@ UniValue distributereward(const JSONRPCRequest& request) {
     std::string asset_name(request.params[0].get_str());
     int snapshot_height = request.params[1].get_int();
     std::string distribution_asset_name(request.params[2].get_str());
-    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_asset_name == "RVN"));
+    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_asset_name == "RUCK"));
     std::string exception_addresses;
     if (request.params.size() > 4) {
         exception_addresses = request.params[4].get_str();
@@ -373,7 +373,7 @@ UniValue distributereward(const JSONRPCRequest& request) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid snapshot_height: block height should be less than or equal to the current active chain height"));
     }
 
-    if (distribution_asset_name != "RVN") {
+    if (distribution_asset_name != "RUCK") {
         if (!IsAssetNameValid(distribution_asset_name, distributionAssetType))
             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid distribution_asset_name: Please use a valid asset name"));
 
@@ -448,7 +448,7 @@ UniValue getdistributestatus(const JSONRPCRequest& request) {
     std::string asset_name(request.params[0].get_str());
     int snapshot_height = request.params[1].get_int();
     std::string distribution_asset_name(request.params[2].get_str());
-    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_asset_name == "RVN"));
+    CAmount distribution_amount = AmountFromValue(request.params[3], (distribution_asset_name == "RUCK"));
     std::string exception_addresses;
     if (request.params.size() > 4) {
         exception_addresses = request.params[4].get_str();

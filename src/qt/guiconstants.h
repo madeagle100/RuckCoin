@@ -114,13 +114,13 @@ static const int MAX_URI_LENGTH = 255;
 /* Number of frames in spinner animation */
 #define SPINNER_FRAMES 36
 
-#define QAPP_ORG_NAME "Raven"
-#define QAPP_ORG_DOMAIN "raven.org"
-#define QAPP_APP_NAME_DEFAULT "Raven-Qt"
-#define QAPP_APP_NAME_TESTNET "Raven-Qt-testnet"
+#define QAPP_ORG_NAME "Ruck"
+#define QAPP_ORG_DOMAIN "ruckcoin.org"
+#define QAPP_APP_NAME_DEFAULT "Ruck-Qt"
+#define QAPP_APP_NAME_TESTNET "Ruck-Qt-testnet"
 
-/* Default third party browser urls */
-#define DEFAULT_THIRD_PARTY_BROWSERS "https://api.ravencoin.org/tx/%s|https://rvn.cryptoscope.io/tx/?txid=%s|https://blockbook.ravencoin.org/tx/%s|https://explorer.mangofarmassets.com/tx/%s|https://www.assetsexplorer.com/tx/%s|https://explorer.ravenland.org/tx/%s"
+/* Default third party browser urls — replace with RuckCoin explorers when they exist */
+#define DEFAULT_THIRD_PARTY_BROWSERS ""
 
 /* Default IPFS viewer */
 #define DEFAULT_IPFS_VIEWER "https://ipfs.io/ipfs/%s"

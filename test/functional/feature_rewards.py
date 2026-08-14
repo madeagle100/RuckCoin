@@ -179,7 +179,7 @@ class RewardsTest(RavenTestFramework):
         # assert_equal(n0.listassetbalancesbyaddress(shareholder_addr4)["STOCK1"], 700)
 
         self.log.info("Initiating reward payout")
-        n0.distributereward(asset_name="STOCK1", snapshot_height=tgt_block_height, distribution_asset_name="RVN",
+        n0.distributereward(asset_name="STOCK1", snapshot_height=tgt_block_height, distribution_asset_name="RUCK",
                             gross_distribution_amount=2000, exception_addresses=dist_addr0)
         n0.generate(10)
         self.sync_all()
@@ -367,7 +367,7 @@ class RewardsTest(RavenTestFramework):
 
         self.log.info("Initiating failing reward payout")
         assert_raises_rpc_error(-32600, "Snapshot request not found",
-                                n0.distributereward, "STOCK3", tgt_block_height, "RVN", 2000, owner_addr0)
+                                n0.distributereward, "STOCK3", tgt_block_height, "RUCK", 2000, owner_addr0)
 
     # Attempts a payout for an invalid ownership asset
     def payout_with_invalid_ownership_asset(self):
@@ -391,7 +391,7 @@ class RewardsTest(RavenTestFramework):
 
         self.log.info("Initiating failing reward payout")
         assert_raises_rpc_error(-32600, "The asset hasn't been created: STOCK4",
-                                n0.distributereward, "STOCK4", tgt_block_height, "RVN", 2000, owner_addr0)
+                                n0.distributereward, "STOCK4", tgt_block_height, "RUCK", 2000, owner_addr0)
 
     # Attempts a payout for an invalid payout asset
     def payout_with_invalid_payout_asset(self):
@@ -454,7 +454,7 @@ class RewardsTest(RavenTestFramework):
             "Initiating failing reward payout because we are only 15 block ahead of the snapshot instead of 60")
         assert_raises_rpc_error(-32600,
                                 "For security of the rewards payout, it is recommended to wait until chain is 60 blocks ahead of the snapshot height. You can modify this by using the -minrewardsheight.",
-                                n0.distributereward, "STOCK6", tgt_block_height, "RVN", 2000, owner_addr0)
+                                n0.distributereward, "STOCK6", tgt_block_height, "RUCK", 2000, owner_addr0)
 
     # Attempts a payout using a custom rewards height of 15, and they have low rvn balance
     def payout_custom_height_set_with_low_funds(self):
@@ -494,12 +494,12 @@ class RewardsTest(RavenTestFramework):
         self.sync_all()
 
         self.log.info("Initiating reward payout should succeed because -minrewardheight=15 on node1")
-        n1.distributereward("STOCK7", tgt_block_height, "RVN", 2000, owner_addr0)
+        n1.distributereward("STOCK7", tgt_block_height, "RUCK", 2000, owner_addr0)
 
         n1.generate(2)
         self.sync_all()
 
-        assert_equal(n1.getdistributestatus("STOCK7", tgt_block_height, "RVN", 2000, owner_addr0)['Status'], 3)
+        assert_equal(n1.getdistributestatus("STOCK7", tgt_block_height, "RUCK", 2000, owner_addr0)['Status'], 3)
 
         n0.sendtoaddress(n1.getnewaddress(), 3000)
         n0.generate(5)
