@@ -1,7 +1,7 @@
 
 * banlist.dat: stores the IPs/Subnets of banned nodes
-* raven.conf: contains configuration settings for ravend or raven-qt
-* ravend.pid: stores the process id of ravend while running
+* ruck.conf: contains configuration settings for ruckd / ravend or raven-qt (legacy raven.conf is still read if ruck.conf is missing)
+* ruckd.pid: stores the process id of ruckd / ravend while running
 * blocks/blk000??.dat: block data (custom, 128 MiB per file); since 0.8.0
 * blocks/rev000??.dat; block undo data (custom); since 0.8.0 (format changed since pre-0.8)
 * blocks/index/*; block index (LevelDB); since 0.8.0
