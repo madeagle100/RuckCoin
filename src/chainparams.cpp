@@ -179,9 +179,33 @@ public:
         nDefaultPort = 8867;
         nPruneAfterHeight = 100000;
 
-        genesis = CreateGenesisBlock(1786665600, 1, 0x1e00ffff, 4, 5000 * COIN);
+        // Genesis is X16Rv2. KAWPOW starts one second later so GetHash() matches.
+        const uint32_t nGenesisTime = 1786665600;
+        uint32_t nGenesisNonce = 17493341;
 
-        consensus.hashGenesisBlock = genesis.GetX16RHash();
+        if (const char* pszMine = getenv("RUCK_MINE_GENESIS")) {
+            (void)pszMine;
+            arith_uint256 bnTarget;
+            bool fNegative = false;
+            bool fOverflow = false;
+            bnTarget.SetCompact(0x1e00ffff, &fNegative, &fOverflow);
+            fprintf(stderr, "Mining RuckCoin genesis to target %s\n", bnTarget.GetHex().c_str());
+            for (uint32_t nNonce = 0;; ++nNonce) {
+                genesis = CreateGenesisBlock(nGenesisTime, nNonce, 0x1e00ffff, 4, 5000 * COIN);
+                const uint256 hash = genesis.GetX16RV2Hash();
+                if (UintToArith256(hash) <= bnTarget) {
+                    fprintf(stderr, "GENESIS_NONCE=%u\nGENESIS_HASH=%s\nGENESIS_MERKLE=%s\n",
+                            nNonce, hash.GetHex().c_str(), genesis.hashMerkleRoot.GetHex().c_str());
+                    exit(0);
+                }
+                if ((nNonce % 100000) == 0) {
+                    fprintf(stderr, "  nonce %u best-so-far scan...\n", nNonce);
+                }
+            }
+        }
+
+        genesis = CreateGenesisBlock(nGenesisTime, nGenesisNonce, 0x1e00ffff, 4, 5000 * COIN);
+        consensus.hashGenesisBlock = genesis.GetX16RV2Hash();
 
         vSeeds.clear();
         vFixedSeeds.clear();
@@ -248,7 +272,7 @@ public:
         nMessagingActivationBlock = 1;
         nRestrictedActivationBlock = 1;
 
-        nKAAAWWWPOWActivationTime = 1786665600; // RuckCoin genesis: 2026-08-14 00:00:00 UTC
+        nKAAAWWWPOWActivationTime = 1786665601; // one second after genesis
         nKAWPOWActivationTime = nKAAAWWWPOWActivationTime;
         /** RUCK End **/
     }
