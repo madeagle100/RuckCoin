@@ -21,6 +21,8 @@ Then visit http://127.0.0.1:8765/
 | `paper.html` | White paper v1.0 |
 | `timeline.html` | March route |
 | `veterans.html` | Fund policy and (later) the public address |
+| `wallet.html` | Download the first-timer wallet |
+| `downloads/ruckcoin-wallet.zip` | Wallet zip |
 | `spec.html` | Frozen numbers |
 | `faq.html` | Short answers |
 
