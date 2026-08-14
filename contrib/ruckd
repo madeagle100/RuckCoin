@@ -1,0 +1,14 @@
+#!/bin/sh
+# User-facing name for the RuckCoin daemon. The binary is still ravend.
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -x "$DIR/../src/ravend" ]; then
+  exec "$DIR/../src/ravend" "$@"
+fi
+if [ -x "$DIR/ravend" ]; then
+  exec "$DIR/ravend" "$@"
+fi
+if [ -x /root/src/ruckcoin/src/ravend ]; then
+  exec /root/src/ruckcoin/src/ravend "$@"
+fi
+echo "ruckd: ravend binary not found" >&2
+exit 1

@@ -55,6 +55,7 @@ extern std::atomic<bool> fReopenDebugLog;
 extern CTranslationInterface translationInterface;
 
 extern const char *const RAVEN_CONF_FILENAME;
+extern const char *const RAVEN_LEGACY_CONF_FILENAME;
 extern const char *const RAVEN_PID_FILENAME;
 
 extern std::atomic<uint32_t> logCategories;

@@ -88,8 +88,9 @@
 // Application startup time (used for uptime calculation)
 const int64_t nStartupTime = GetTime();
 
-const char *const RAVEN_CONF_FILENAME = "raven.conf";
-const char *const RAVEN_PID_FILENAME = "ravend.pid";
+const char *const RAVEN_CONF_FILENAME = "ruck.conf";
+const char *const RAVEN_LEGACY_CONF_FILENAME = "raven.conf";
+const char *const RAVEN_PID_FILENAME = "ruckd.pid";
 
 ArgsManager gArgs;
 bool fPrintToConsole = false;
@@ -623,6 +624,14 @@ fs::path GetConfigFile(const std::string &confPath)
     if (!pathConfigFile.is_complete())
         pathConfigFile = GetDataDir(false) / pathConfigFile;
 
+    // Default name is ruck.conf. Fall back to a leftover raven.conf in the
+    // same datadir so existing test nodes keep their RPC settings.
+    if (confPath == RAVEN_CONF_FILENAME && !fs::exists(pathConfigFile)) {
+        fs::path legacy = GetDataDir(false) / RAVEN_LEGACY_CONF_FILENAME;
+        if (fs::exists(legacy))
+            return legacy;
+    }
+
     return pathConfigFile;
 }
 
@@ -630,7 +639,7 @@ void ArgsManager::ReadConfigFile(const std::string &confPath)
 {
     fs::ifstream streamConfig(GetConfigFile(confPath));
     if (!streamConfig.good())
-        return; // No raven.conf file is OK
+        return; // No ruck.conf / raven.conf file is OK
 
     {
         LOCK(cs_args);
@@ -639,7 +648,7 @@ void ArgsManager::ReadConfigFile(const std::string &confPath)
 
         for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it)
         {
-            // Don't overwrite existing settings so command line settings override raven.conf
+            // Don't overwrite existing settings so command line settings override the config file
             std::string strKey = std::string("-") + it->string_key;
             std::string strValue = it->value[0];
             InterpretNegativeSetting(strKey, strValue);

@@ -1,6 +1,6 @@
-# `raven.conf` Configuration File
+# `ruck.conf` Configuration File
 
-The configuration file is used by `ravend`, `raven-qt` and `raven-cli`.
+The configuration file is used by `ruckd`/`ravend`, `raven-qt` and `ruck-cli`/`raven-cli`. The default name is `ruck.conf`. If that file is missing, a leftover `raven.conf` in the same data directory is still read.
 
 All command-line options (except for `-?`, `-help`, `-version` and `-conf`) may be specified in a configuration file, and all configuration file options (except for `includeconf`) may also be specified on the command line. Command-line options override values set in the configuration file and configuration file options override values set in the GUI.
 

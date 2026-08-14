@@ -1,8 +1,11 @@
 #!/bin/bash
 set -euo pipefail
-D=/root/.ruck
+D=/home/ruck/.ruck
 BIN=/root/src/ruckcoin/src
-CONF=$D/raven.conf
+CONF=$D/ruck.conf
+if [ ! -f "$CONF" ] && [ -f "$D/raven.conf" ]; then
+  CONF=$D/raven.conf
+fi
 
 mkdir -p "$D"
 grep -q '^bypassdownload=' "$CONF" 2>/dev/null || echo 'bypassdownload=1' >> "$CONF"

@@ -92,7 +92,8 @@ Veterans / governance, if you still want it, is social (a published donation add
 
 | Role | Where |
 | --- | --- |
-| Test daemon | Ubuntu WSL: `/root/src/ruckcoin/src/ravend -datadir=/root/.ruck` |
+| Test daemon | Ubuntu WSL: `/root/src/ruckcoin/src/ravend -datadir=/home/ruck/.ruck` |
+| Config | `ruck.conf` in that datadir (`raven.conf` still works if `ruck.conf` is missing) |
 | P2P | `127.0.0.1:8867` |
 | RPC | `127.0.0.1:8866` (user `ruck` / pass `ruckdev`, localhost only) |
 

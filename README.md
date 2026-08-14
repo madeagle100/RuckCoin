@@ -36,7 +36,7 @@ RuckCoin keeps Ravencoin's asset (token) layer, so you can issue and transfer as
 - Asset / messaging / restricted-asset / KAWPOW activation start at genesis
 - Display name, ticker, Qt app id, and payment URI scheme (`ruck:`)
 
-Daemon / CLI binaries are still built as `ravend`, `raven-cli`, and `raven-qt` (Ravencoin build system). The running node identifies as **RuckCoin**.
+The build system still produces `ravend`, `raven-cli`, and `raven-qt`. Use the `ruckd` / `ruck-cli` wrappers (they call those binaries). Config is `ruck.conf` in the data directory; a leftover `raven.conf` is still read if `ruck.conf` is missing.
 
 ## Source
 

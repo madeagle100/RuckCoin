@@ -1,7 +1,7 @@
 #!/bin/bash
 set -u
 LOG=/root/ruckcoin-build.log
-D=/root/.ruck
+D=/home/ruck/.ruck
 BIN=/root/src/ruckcoin/src
 
 exec > >(tee -a "$LOG") 2>&1
@@ -10,7 +10,11 @@ echo
 echo "==== STARTING RUCKCOIN NODE $(date) ===="
 
 mkdir -p "$D"
-cat > "$D/raven.conf" << 'EOF'
+if [ ! -f "$D/ruck.conf" ]; then
+  if [ -f "$D/raven.conf" ]; then
+    cp "$D/raven.conf" "$D/ruck.conf"
+  else
+    cat > "$D/ruck.conf" << 'EOF'
 server=1
 listen=1
 daemon=1
@@ -24,9 +28,12 @@ rpcpassword=ruckdev
 rpcallowip=127.0.0.1
 rpcbind=127.0.0.1
 printtoconsole=0
+bypassdownload=1
 EOF
+  fi
+fi
 
-echo "config: $D/raven.conf"
+echo "config: $D/ruck.conf"
 if pgrep -x ravend >/dev/null; then
   echo "ravend already running"
 else

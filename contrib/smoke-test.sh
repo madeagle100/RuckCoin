@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-CLI="/root/src/ruckcoin/src/raven-cli -datadir=/root/.ruck"
+CLI="/root/src/ruckcoin/src/raven-cli -datadir=/home/ruck/.ruck"
 
 echo "=== send test ==="
 DEST=$($CLI getnewaddress dest)

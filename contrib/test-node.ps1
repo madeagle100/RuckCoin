@@ -6,8 +6,8 @@ param(
 )
 
 $wsl = @("-d", "Ubuntu-24.04", "-u", "root", "--")
-$cli = "/root/src/ruckcoin/src/raven-cli -datadir=/root/.ruck"
-$d = "/root/src/ruckcoin/src/ravend -datadir=/root/.ruck"
+$cli = "/root/src/ruckcoin/src/raven-cli -datadir=/home/ruck/.ruck"
+$d = "/root/src/ruckcoin/src/ravend -datadir=/home/ruck/.ruck"
 
 switch ($Command) {
     "start" {
