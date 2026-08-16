@@ -105,21 +105,16 @@ We will not publish a token price, an exchange listing date, or a “guaranteed�
 
 ---
 
-## Phase 5 — Markets (optional, later)
+## Phase 5 — Push for exchange listings
 
-**When:** only after Phase 4 has a reason  
-**Status:** If, and not required
+**When:** after official height-0 launch (Phase 3). Phase 4 (extra seeds, public explorer) can run in parallel.  
+**Status:** Planned. Not a date. Not a named venue.
 
-There is no official DEX, CEX, or liquidity plan required to exist.
+Mining creates RUCK. A listing is how people can trade it for other money. After launch the project will apply to centralized and decentralized exchanges and keep pushing. A community pair or a pool funded with someone’s own cash can happen too.
 
-If people want to trade RUCK against something else, that can be:
+None of that is part of consensus. An exchange can say no. We will not publish a price or a “listed by Q4” promise.
 
-- a community-run atomic swap or wrapped pair, or
-- a pool someone funds with **their own** cash (the white paper’s optional $5k–$15k line).
-
-The project will not pretend a market is part of consensus.
-
-**Exit check:** None. Skip forever if there is no reason.
+**Exit check:** real applications submitted, and a public note of what we submitted (type of venue, date). A live market is their decision.
 
 ---
 
@@ -127,7 +122,7 @@ The project will not pretend a market is part of consensus.
 
 - Masternodes, staking, an ICO date
 - A built-in veterans tax
-- “Listing on Binance by Q4”
+- “Listed on [named exchange] by Q4” — we apply; we do not invent a date
 - A second coin, an NFT marketplace, or a mobile app before a working desktop wallet
 
 ---
@@ -141,6 +136,6 @@ The project will not pretend a market is part of consensus.
 | late Aug – mid Sep 2026 | Wallet + local explorer |
 | Sep – Oct 2026 | Public height-0 launch, if wallet is ready |
 | After launch, if used | Seeds, public explorer, veterans address |
-| Later, if needed | Optional market liquidity |
+| After official launch | Push for exchange listings |
 
 If a date slips, we slip the date. We do not quietly change the money rules to look busy.

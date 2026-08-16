@@ -292,7 +292,7 @@ These are not coming later as a “surprise upgrade”:
 - A scheduled supply burn from a privileged key
 - A DEX inside the base protocol
 
-A DEX *listing*, much later, would be a normal market thing other people (or we, with our own cash) might do. It is not required to launch. Launch costs no treasury. Coins do not exist until they are mined.
+A DEX is not inside the protocol. After official launch the project **will push** to list RUCK on exchanges so mined coins can be traded for other money. Launch still costs no treasury. Coins still do not exist until they are mined. A listing is an application, not a guaranteed yes, and not a price.
 
 ---
 
@@ -342,9 +342,9 @@ Full dates and exit criteria live in [timeline.md](timeline.md) and on the websi
 | 2 | Wallet people can actually use + local explorer | Next |
 | 3 | Public launch day (height 0) | After phase 2 |
 | 4 | Seeds, public explorer, miner docs | Only if people show up |
-| 5 | Optional markets (DEX) | Later, only with a real reason |
+| 5 | Push for exchange listings | After official launch |
 
-We will not invent a listing date or a price. Those are not ours to promise.
+We will push for listings so mined RUCK can be traded. We will not invent a listing date, a named venue, or a price. Those are not ours to promise.
 
 ---
 
