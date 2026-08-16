@@ -40,4 +40,18 @@ Canonical long text also lives in:
 
 ## Publish
 
-Point GitHub Pages (or any static host) at this `website/` folder. Do not call the network public until Phase 3 on the timeline.
+Live site: **https://ruckcoin.org/** (GitHub Pages).  
+Test seed: `addnode=seed.ruckcoin.org:8867`
+
+DNS at the registrar (this is the part you add; GitHub cannot do it):
+
+| Type | Name | Value | Proxy |
+| --- | --- | --- | --- |
+| A | `@` | `185.199.108.153` | off |
+| A | `@` | `185.199.109.153` | off |
+| A | `@` | `185.199.110.153` | off |
+| A | `@` | `185.199.111.153` | off |
+| CNAME | `www` | `madeagle100.github.io` | off |
+| A | `seed` | your current home IP | off |
+
+Do not orange-cloud / proxy `seed`. P2P on 8867 will break.
