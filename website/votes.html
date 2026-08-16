@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Holder votes — RuckCoin</title>
+  <meta name="description" content="RuckCoin holder votes: official wallet, a published minimum balance, public proposals to unlock ops or listing locks. No votes on the test chain count.">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="tape">No official votes yet. The test chain does not unlock anything. Official launch is still height 0.</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="img/mark.svg" alt="">
+        <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+            <ul class="nav-links" id="menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="run.html">Start</a></li>
+        <li><a href="wallet.html">Wallet</a></li>
+        <li><a href="mine.html">Mine</a></li>
+        <li><a href="learn.html">Learn</a></li>
+        <li><a href="books.html" aria-current="page">Open books</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <p class="kicker">Holders decide unlocks</p>
+    <h1>Votes</h1>
+    <p class="lede">After official launch, locked ops and listing coins do not move because we feel like it. A proposal goes on this page. People using the <strong>official wallet</strong>, who hold at least the published minimum of RUCK, vote yes or no. If the vote fails, the coins stay locked.</p>
+
+    <div class="os-pick">
+      <article class="os-card">
+        <p class="os-status ready">Who can vote</p>
+        <h2>Official wallet + enough RUCK</h2>
+        <ol>
+          <li>Use the official wallet (the one from this site).</li>
+          <li>Hold at least the minimum on a <code>K</code> address you control. That minimum is printed here at height 0.</li>
+          <li>Your vote is tied to that address — not to an email, and not to a click we can fake.</li>
+        </ol>
+        <p>Minimum to vote: <strong>not set yet</strong> (printed at official launch).</p>
+      </article>
+      <article class="os-card">
+        <p class="os-status build">What a vote can do</p>
+        <h2>Unlock a named amount</h2>
+        <p>Each proposal is one job: which lock, how much, why (ops bill, named exchange deposit, named liquidity). Not a blank check. Not the veterans fund — that pot is aid, not a vote prize.</p>
+      </article>
+      <article class="os-card">
+        <p class="os-status wait">How it is counted</p>
+        <h2>Weight is coins, record is public</h2>
+        <p>One RUCK, one weight, at a snapshot height printed on the proposal. Yes must beat no, and yes must clear a quorum printed at launch. The site shows the race. The spend still needs a txid on the <a href="locks.html">locks</a> table that matches the winning proposal.</p>
+      </article>
+    </div>
+
+    <h2>How you will vote (after launch)</h2>
+    <ol class="steps">
+      <li>
+        <div>
+          <h3>Read the proposal on this page</h3>
+          <p>Amount, lock, reason, start height, end height, snapshot height. If those fields are missing, it is not a real proposal.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Vote from the official wallet</h3>
+          <p>The wallet will offer Yes / No on an open proposal. Under the hood that is a signed message from your <code>K</code> address, or a Ravencoin-style vote asset sent to a tally address — we will pick one method and print it here before the first vote. The site is the bulletin board. The keys stay on your computer.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Result, then the spend</h3>
+          <p>When the window closes we publish yes weight, no weight, and pass/fail. A pass still has to show up as a matching outflow on the locks page. A fail means nothing moves.</p>
+        </div>
+      </li>
+    </ol>
+
+    <h2>Open proposals</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Lock</th><th>Amount</th><th>Why</th><th>Window</th><th>Result</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="6">None. Votes start after official height 0, after the lock addresses are printed, and after the first proposal is posted here.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Rules that keep this from being theater</h2>
+    <ul>
+      <li>We cannot pass a proposal by clicking “yes” on the server. Weight comes from addresses that hold RUCK.</li>
+      <li>We cannot spend a lock without a passed proposal that matches the amount and the reason.</li>
+      <li>Test-chain coins and test-chain votes do not count.</li>
+      <li>Buying a vote in a chat is still just a chat. The chain and the snapshot are what count.</li>
+      <li>If the official wallet and this page ever disagree on a result, the published signed votes / on-chain tally wins — not a screenshot.</li>
+    </ul>
+
+    <div class="note alert">
+      <p><strong>Today.</strong> Public test. No lock addresses, no minimum, no proposals. Anyone running a “RuckCoin vote” in a group chat is not this project.</p>
+    </div>
+    <p><a href="locks.html">Ops and listing locks</a> · <a href="wallet.html">Official wallet</a> · <a href="faq.html">FAQ</a></p>
+  </main>
+    <footer class="site-foot">
+    <div class="wrap">
+      <strong>RuckCoin</strong>
+      <nav class="foot-map" aria-label="All pages">
+        <a href="run.html">Start</a>
+        <a href="wallet.html">Wallet</a>
+        <a href="mine.html">Mine</a>
+        <a href="learn.html">How it works</a>
+        <a href="paper.html">White paper</a>
+        <a href="timeline.html">Timeline</a>
+        <a href="spec.html">Spec</a>
+        <a href="explore.html">Look up</a>
+        <a href="books.html">Open books</a>
+        <a href="veterans.html">Veterans</a>
+        <a href="locks.html">Locks</a>
+        <a href="votes.html">Votes</a>
+        <a href="faq.html">FAQ</a>
+      </nav>
+      <small>Not an offer to sell coins. Public test only. Official launch is a fresh height 0.</small>
+    </div>
+  </footer>
+  <script src="js/site.js"></script>
+</body>
+</html>

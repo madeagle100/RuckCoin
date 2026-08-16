@@ -17,18 +17,20 @@ Then visit http://127.0.0.1:8765/
 | File | What it is |
 | --- | --- |
 | `index.html` | Home |
-| `run.html` | Start — Windows / Linux / Mac (which file to get) |
-| `learn.html` | Plain-language walkthrough |
+| `run.html` | Start — Windows / Linux / Mac |
+| `wallet.html` | Wallet |
+| `mine.html` | Mine |
+| `learn.html` | How it works (hub to paper, timeline, spec, look-up) |
+| `books.html` | Open books hub (veterans, locks, votes) |
+| `veterans.html` | Veterans fund |
+| `locks.html` | Ops and listing locks |
+| `votes.html` | Holder votes |
 | `paper.html` | White paper |
-| `timeline.html` | March route |
-| `veterans.html` | Fund policy and (later) the public address |
-| `wallet.html` | Wallet (same zip on every OS) |
-| `mine.html` | GPU mining on your node, your K address |
-| `downloads/ruckcoin-wallet.zip` | Wallet zip |
-| `downloads/ruckcoin-linux-x86_64.zip` | Linux node (Ubuntu 24.04 x86_64) |
-| `downloads/SHA256SUMS.txt` | SHA-256 of the zips |
+| `timeline.html` | Calendar |
 | `spec.html` | Frozen numbers |
+| `explore.html` | Local look-up |
 | `faq.html` | Short answers |
+| `downloads/` | Wallet zip, Linux node zip, SHA256SUMS |
 
 Canonical long text also lives in:
 

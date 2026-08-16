@@ -438,6 +438,17 @@ th {
 .site-foot .wrap { padding: 0; display: grid; gap: 1rem; }
 .site-foot a { color: var(--brass); }
 .site-foot small { color: #9aa392; display: block; max-width: 40rem; }
+.foot-map {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem 1rem;
+  font-family: var(--mono);
+  font-size: .75rem;
+  letter-spacing: .04em;
+}
+.foot-map a { text-decoration: none; }
+.foot-map a:hover { text-decoration: underline; }
+.find-grid { margin-top: 1.2rem; }
 
 .os-pick {
   display: grid;

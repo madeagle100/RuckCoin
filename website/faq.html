@@ -21,17 +21,13 @@
         <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
       </a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
-      <ul class="nav-links" id="menu">
+            <ul class="nav-links" id="menu">
         <li><a href="index.html">Home</a></li>
         <li><a href="run.html">Start</a></li>
         <li><a href="wallet.html">Wallet</a></li>
         <li><a href="mine.html">Mine</a></li>
-        <li><a href="learn.html">How it works</a></li>
-        <li><a href="paper.html">White paper</a></li>
-        <li><a href="timeline.html">Timeline</a></li>
-        <li><a href="veterans.html">Veterans</a></li>
-        <li><a href="explore.html">Look up</a></li>
-        <li><a href="spec.html">Spec</a></li>
+        <li><a href="learn.html">Learn</a></li>
+        <li><a href="books.html">Open books</a></li>
         <li><a href="faq.html" aria-current="page">FAQ</a></li>
       </ul>
     </div>
@@ -52,7 +48,7 @@
     </details>
     <details>
       <summary>Is there a premine?</summary>
-      <p>The public start will have none. A private test chain was used to prove mining and assets. Those test coins will not carry over. If we ever call that test wallet the public coin, we have broken the paper.</p>
+      <p>The public start will have none. Ops and listing coins are filled <em>after</em> height 0, in published <a href="locks.html">locks</a>. Test coins will not carry over. If we ever call the test wallet the public coin, we have broken the paper.</p>
     </details>
     <details>
       <summary>How do veterans actually get support?</summary>
@@ -73,6 +69,10 @@
     <details>
       <summary>Do I need to put money in to launch?</summary>
       <p>No. Nodes, wallets, and mining do not require a DEX pool. Optional later, if people want a trading pair, someone would have to fund that with their own cash. Launch does not depend on it.</p>
+    </details>
+    <details>
+      <summary>What are the locks, and who unlocks them?</summary>
+      <p>Two published pots after official launch: ops (running the project) and listings (exchange deposits and pair inventory). No genesis pile. No block tax. Holders with the official wallet and a published minimum of RUCK <a href="votes.html">vote</a> to unlock a named amount. If the vote fails, nothing moves. Details: <a href="books.html">Open books</a>.</p>
     </details>
     <details>
       <summary>Will you list on an exchange?</summary>
@@ -108,10 +108,25 @@
     </details>
   </main>
 
-  <footer class="site-foot">
+    <footer class="site-foot">
     <div class="wrap">
       <strong>RuckCoin</strong>
-      <small>Not an offer to sell coins.</small>
+      <nav class="foot-map" aria-label="All pages">
+        <a href="run.html">Start</a>
+        <a href="wallet.html">Wallet</a>
+        <a href="mine.html">Mine</a>
+        <a href="learn.html">How it works</a>
+        <a href="paper.html">White paper</a>
+        <a href="timeline.html">Timeline</a>
+        <a href="spec.html">Spec</a>
+        <a href="explore.html">Look up</a>
+        <a href="books.html">Open books</a>
+        <a href="veterans.html">Veterans</a>
+        <a href="locks.html">Locks</a>
+        <a href="votes.html">Votes</a>
+        <a href="faq.html">FAQ</a>
+      </nav>
+      <small>Not an offer to sell coins. Public test only. Official launch is a fresh height 0.</small>
     </div>
   </footer>
   <script src="js/site.js"></script>

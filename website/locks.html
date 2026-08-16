@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ops and listing locks — RuckCoin</title>
+  <meta name="description" content="How RuckCoin will hold coins for development and exchange listings in public, locked addresses. No hidden premine. Addresses not published yet.">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="tape">No official lock addresses yet. Do not send coins to anyone claiming to collect a “dev fund” or “listing reserve.”</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="img/mark.svg" alt="">
+        <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+            <ul class="nav-links" id="menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="run.html">Start</a></li>
+        <li><a href="wallet.html">Wallet</a></li>
+        <li><a href="mine.html">Mine</a></li>
+        <li><a href="learn.html">Learn</a></li>
+        <li><a href="books.html" aria-current="page">Open books</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <p class="kicker">Open books · not a premine</p>
+    <h1>Ops and listing locks</h1>
+    <p class="lede">After official launch we will need coins we can actually use: to pay for keeping the project running, and to deposit or seed a book when an exchange will list RUCK. Those coins will sit in <strong>two published addresses</strong> you can watch. They will not appear in genesis. They will not come from the test wallet.</p>
+
+    <div class="note">
+      <p><strong>Why this exists.</strong> A mineable coin with no listing inventory and no way to pay servers stays a notebook on a home PC. Hiding a pile in genesis is how projects lose the room. We chose public locks instead.</p>
+    </div>
+
+    <h2>The two pots</h2>
+    <div class="os-pick">
+      <article class="os-card">
+        <p class="os-status build">Ops lock</p>
+        <h2>Development and running costs</h2>
+        <p>Servers, legal, tools, the work of applying to exchanges. Not a salary dump the day after launch.</p>
+        <div class="addr-box">
+          <p class="label">Address</p>
+          <p class="empty">Not published yet</p>
+          <p>Printed here on official height 0. Target size printed the same day.</p>
+        </div>
+      </article>
+      <article class="os-card">
+        <p class="os-status build">Listings lock</p>
+        <h2>Exchange deposits and liquidity</h2>
+        <p>Coins an exchange or a market-maker may require to open a pair. Not for personal sale in a chat.</p>
+        <div class="addr-box">
+          <p class="label">Address</p>
+          <p class="empty">Not published yet</p>
+          <p>Printed here on official height 0. Target size printed the same day.</p>
+        </div>
+      </article>
+      <article class="os-card">
+        <p class="os-status ready">Veterans fund</p>
+        <h2>Separate on purpose</h2>
+        <p>Aid is not ops and not listings. That pot stays on the <a href="veterans.html">veterans page</a>. We will not move coins between these three without a public note and a txid.</p>
+      </article>
+    </div>
+
+    <h2>How coins get in (after height 0)</h2>
+    <ul>
+      <li>We mine in the open, same rules as everyone else, then send to these addresses.</li>
+      <li>Anyone may donate to a lock. That is voluntary.</li>
+      <li>No coins in block 0. No cut of the 5,000 block reward. No fee tax.</li>
+      <li>The test-chain wallet does not move here. Those coins die in the reset.</li>
+    </ul>
+
+    <h2>How the community can check we are not dumping</h2>
+    <ol class="steps">
+      <li>
+        <div>
+          <h3>If it is not on this page, it is not a lock</h3>
+          <p>No DM address. No “send to this K for the listing.” Only the strings printed below, once they exist.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Ops coins wait, then the room votes</h3>
+          <p>Ops coins stay put until a published height (about 90 days after official launch). After that, a spend still needs a <a href="votes.html">public vote</a> from official-wallet holders. We will also print a per-proposal cap at launch so one vote cannot empty the pot.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Listing coins leave only for a named venue, after a vote</h3>
+          <p>A listings unlock must name the exchange or pool and the job (deposit, pair inventory, documented market-making). No “misc.” Holders vote on that exact amount and reason. If the vote fails, the coins stay put.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Every outflow has a row</h3>
+          <p>Date, which lock, amount, why, vote result, txid. Same standard as the veterans page. An empty excuse is a broken promise.</p>
+        </div>
+      </li>
+    </ol>
+
+    <h2>Outflows</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Lock</th><th>Amount</th><th>Why</th><th>Txid</th></tr></thead>
+        <tbody>
+          <tr><td colspan="5">No public locks yet. This table stays empty until official launch and the first spend.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Targets (printed at launch)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Lock</th><th>Target</th><th>First unlock</th><th>Spend rule</th></tr></thead>
+        <tbody>
+          <tr><td>Ops</td><td>Set on height 0, in RUCK, on this page</td><td>~90 days, then a holder vote</td><td>Per-proposal cap + vote + public row</td></tr>
+          <tr><td>Listings</td><td>Set on height 0, in RUCK, on this page</td><td>Named venue + holder vote</td><td>Named job + vote + public row</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>If a lock goes over its target, the extra stays in the address or is burned. We will say which, with a txid. We will not invent a huge genesis pile and call it a lock.</p>
+
+    <h2>What we will not do</h2>
+    <ul>
+      <li>No premine and no founder wallet in genesis.</li>
+      <li>No protocol tax labeled “dev fee.”</li>
+      <li>No mixing these coins with the veterans fund.</li>
+      <li>No unlocking because a chart looks good, or locking forever because it does not.</li>
+      <li>No using listing coins as a personal bag.</li>
+    </ul>
+
+    <div class="note alert">
+      <p><strong>Today.</strong> Public test only. There are no official lock addresses. Anyone collecting “dev RUCK” or “listing liquidity” right now is not this project.</p>
+    </div>
+    <p><a href="veterans.html">Veterans fund</a> · <a href="timeline.html">Timeline</a> · <a href="faq.html">FAQ</a></p>
+  </main>
+    <footer class="site-foot">
+    <div class="wrap">
+      <strong>RuckCoin</strong>
+      <nav class="foot-map" aria-label="All pages">
+        <a href="run.html">Start</a>
+        <a href="wallet.html">Wallet</a>
+        <a href="mine.html">Mine</a>
+        <a href="learn.html">How it works</a>
+        <a href="paper.html">White paper</a>
+        <a href="timeline.html">Timeline</a>
+        <a href="spec.html">Spec</a>
+        <a href="explore.html">Look up</a>
+        <a href="books.html">Open books</a>
+        <a href="veterans.html">Veterans</a>
+        <a href="locks.html">Locks</a>
+        <a href="votes.html">Votes</a>
+        <a href="faq.html">FAQ</a>
+      </nav>
+      <small>Not an offer to sell coins. Public test only. Official launch is a fresh height 0.</small>
+    </div>
+  </footer>
+  <script src="js/site.js"></script>
+</body>
+</html>

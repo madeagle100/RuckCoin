@@ -110,11 +110,13 @@ We will not publish a token price, an exchange listing date, or a “guaranteed�
 **When:** after official height-0 launch (Phase 3). Phase 4 (extra seeds, public explorer) can run in parallel.  
 **Status:** Planned. Not a date. Not a named venue.
 
-Mining creates RUCK. A listing is how people can trade it for other money. After launch the project will apply to centralized and decentralized exchanges and keep pushing. A community pair or a pool funded with someone’s own cash can happen too.
+Mining creates RUCK. A listing is how people can trade it for other money. After launch the project will apply to exchanges and keep pushing.
+
+Coins for ops and for listing deposits go into two published lock addresses, filled after height 0 (no genesis premine). Holders using the official wallet, with a published minimum of RUCK, vote to unlock a named amount. If the vote fails, the coins stay put. Veterans aid is a separate pot.
 
 None of that is part of consensus. An exchange can say no. We will not publish a price or a “listed by Q4” promise.
 
-**Exit check:** real applications submitted, and a public note of what we submitted (type of venue, date). A live market is their decision.
+**Exit check:** lock addresses and vote minimum printed; real applications submitted with a public note (type of venue, date). A live market is their decision.
 
 ---
 

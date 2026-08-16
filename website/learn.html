@@ -21,17 +21,13 @@
         <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
       </a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
-      <ul class="nav-links" id="menu">
+            <ul class="nav-links" id="menu">
         <li><a href="index.html">Home</a></li>
         <li><a href="run.html">Start</a></li>
         <li><a href="wallet.html">Wallet</a></li>
         <li><a href="mine.html">Mine</a></li>
-        <li><a href="learn.html" aria-current="page">How it works</a></li>
-        <li><a href="paper.html">White paper</a></li>
-        <li><a href="timeline.html">Timeline</a></li>
-        <li><a href="veterans.html">Veterans</a></li>
-        <li><a href="explore.html">Look up</a></li>
-        <li><a href="spec.html">Spec</a></li>
+        <li><a href="learn.html" aria-current="page">Learn</a></li>
+        <li><a href="books.html">Open books</a></li>
         <li><a href="faq.html">FAQ</a></li>
       </ul>
     </div>
@@ -40,7 +36,24 @@
   <main id="main" class="wrap">
     <p class="kicker">Field brief</p>
     <h1>How it works</h1>
-    <p class="lede">This page is the kitchen-table version. The <a href="paper.html">white paper</a> is the full version. The <a href="spec.html">spec</a> is the stamped numbers.</p>
+    <p class="lede">Kitchen-table version. Use the cards if you want a specific page.</p>
+    <div class="os-pick find-grid">
+      <article class="os-card">
+        <p class="os-status ready">This page</p>
+        <h2>How it works</h2>
+        <p>Mining, keys, assets, why this is not Ravencoin.</p>
+      </article>
+      <article class="os-card">
+        <p class="os-status build">Long form</p>
+        <h2>Paper &amp; calendar</h2>
+        <p><a href="paper.html">White paper</a> · <a href="timeline.html">Timeline</a> · <a href="spec.html">Stamped numbers</a></p>
+      </article>
+      <article class="os-card">
+        <p class="os-status wait">Look up</p>
+        <h2>Your own node</h2>
+        <p><a href="explore.html">Look up a block or address</a> on this computer. The public site cannot see your wallet.</p>
+      </article>
+    </div>
 
     <h2>The notebook</h2>
     <p>Imagine a notebook that many computers keep a copy of. Every minute or so, someone is allowed to add a page. That page is a <strong>block</strong>. It lists who sent what to whom. The whole stack of pages is the <strong>chain</strong>.</p>
@@ -84,7 +97,7 @@
 
     <h2>Why mine, and how it can be worth something</h2>
     <p>The puzzle creates coins. It does not create a dollar price. After official launch we will push to get RUCK onto exchanges so people can trade mined coins for other money. That is the point of mining a public coin instead of a private notebook.</p>
-    <p>We will do the applications and the follow-up. We cannot make an exchange list us, and we will not invent a listing date or a price. The test chain you can join today is practice. Those coins will be wiped.</p>
+    <p>We will do the applications and the follow-up. We cannot make an exchange list us, and we will not invent a listing date or a price. Coins needed for ops or a listing sit in public <a href="locks.html">locks</a>. Holders <a href="votes.html">vote</a> to unlock a named amount. The test chain you can join today is practice. Those coins will be wiped.</p>
 
     <h2>Veterans — the honest version</h2>
     <p>We did <em>not</em> put a tax on every payment. We did <em>not</em> mint a foundation pile at the first block. We will <em>not</em> lock the fund until a price or “the coin grows.” Help should not wait on a market.</p>
@@ -99,10 +112,25 @@
     <p>When Phase 3 is done, this page will say so, with a start time and a genesis hash you can check. Exchange work is Phase 5, after that.</p>
   </main>
 
-  <footer class="site-foot">
+    <footer class="site-foot">
     <div class="wrap">
-      <strong>RuckCoin</strong> · <a href="paper.html">White paper</a> · <a href="faq.html">FAQ</a>
-      <small>Not an offer to sell coins.</small>
+      <strong>RuckCoin</strong>
+      <nav class="foot-map" aria-label="All pages">
+        <a href="run.html">Start</a>
+        <a href="wallet.html">Wallet</a>
+        <a href="mine.html">Mine</a>
+        <a href="learn.html">How it works</a>
+        <a href="paper.html">White paper</a>
+        <a href="timeline.html">Timeline</a>
+        <a href="spec.html">Spec</a>
+        <a href="explore.html">Look up</a>
+        <a href="books.html">Open books</a>
+        <a href="veterans.html">Veterans</a>
+        <a href="locks.html">Locks</a>
+        <a href="votes.html">Votes</a>
+        <a href="faq.html">FAQ</a>
+      </nav>
+      <small>Not an offer to sell coins. Public test only. Official launch is a fresh height 0.</small>
     </div>
   </footer>
   <script src="js/site.js"></script>
