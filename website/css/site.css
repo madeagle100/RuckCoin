@@ -481,6 +481,32 @@ th {
 
 .which-file td:first-child { font-weight: 700; white-space: nowrap; }
 
+.report-form { max-width: 36rem; margin: 1.2rem 0 1.5rem; }
+.report-form label {
+  display: block;
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 1rem 0 .35rem;
+}
+.report-form input,
+.report-form textarea {
+  width: 100%;
+  font: inherit;
+  padding: .55rem .7rem;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+}
+.report-form .hp {
+  position: absolute;
+  left: -9999px;
+  height: 0;
+  overflow: hidden;
+}
+
 @media (max-width: 800px) {
   .hero, .truths, .mile, .os-pick { grid-template-columns: 1fr; }
   .nav-toggle { display: block; }

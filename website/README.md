@@ -30,6 +30,7 @@ Then visit http://127.0.0.1:8765/
 | `spec.html` | Frozen numbers |
 | `explore.html` | Local look-up |
 | `faq.html` | Short answers |
+| `report.html` | Issue / suggestion box (inbox key in `js/report-key.js`, not an email address) |
 | `downloads/` | Wallet zip, Linux node zip, SHA256SUMS |
 
 Canonical long text also lives in:

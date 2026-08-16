@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Open books — RuckCoin</title>
-  <meta name="description" content="Veterans fund, ops and listing locks, and holder votes. Public addresses and public outflows. Nothing to send to yet.">
+  <title>Report a problem — RuckCoin</title>
+  <meta name="description" content="Tell us if something is broken or suggest a fix. Do not send keys or passwords.">
   <link rel="icon" href="img/mark.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
-  <div class="tape">Public TEST. No official fund or lock addresses yet. Do not send coins to collectors.</div>
+  <div class="tape">Public TEST. Do not send seed words, wallet files, or node passwords.</div>
   <header class="nav">
     <div class="nav-inner">
       <a class="brand" href="index.html">
@@ -21,50 +21,44 @@
         <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
       </a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
-            <ul class="nav-links" id="menu">
+      <ul class="nav-links" id="menu">
         <li><a href="index.html">Home</a></li>
         <li><a href="run.html">Start</a></li>
         <li><a href="wallet.html">Wallet</a></li>
         <li><a href="mine.html">Mine</a></li>
         <li><a href="learn.html">Learn</a></li>
-        <li><a href="books.html" aria-current="page">Open books</a></li>
+        <li><a href="books.html">Open books</a></li>
         <li><a href="faq.html">FAQ</a></li>
       </ul>
     </div>
   </header>
 
   <main id="main" class="wrap">
-    <p class="kicker">Three pots · all public</p>
-    <h1>Open books</h1>
-    <p class="lede">After official launch, coins that are not in your wallet will sit in published addresses. You can watch them. Nothing here is a cut of every block, and nothing is live today.</p>
+    <p class="kicker">Something wrong?</p>
+    <h1>Report or suggest</h1>
+    <p class="lede">If a page is broken, a download fails, or mining/wallet does not do what the site says, leave a note. Suggestions are fine too.</p>
 
-    <div class="os-pick">
-      <article class="os-card">
-        <p class="os-status ready">Aid</p>
-        <h2>Veterans</h2>
-        <p>One address for help, including homeless veterans. Optional donate, off unless you turn it on. Each spend: category + txid. No names of people who received help.</p>
-        <div class="actions"><a class="btn" href="veterans.html">Veterans fund</a></div>
-      </article>
-      <article class="os-card">
-        <p class="os-status build">Project</p>
-        <h2>Locks</h2>
-        <p>Two pots filled <em>after</em> height 0: ops (servers, legal, the work) and listings (exchange deposits and pair inventory). No premine. No hidden bag.</p>
-        <div class="actions"><a class="btn" href="locks.html">Ops and listing locks</a></div>
-      </article>
-      <article class="os-card">
-        <p class="os-status wait">Holders</p>
-        <h2>Votes</h2>
-        <p>Official wallet plus a published minimum of RUCK. Holders vote to unlock a named amount from a lock. If the vote fails, the coins stay put.</p>
-        <div class="actions"><a class="btn" href="votes.html">How votes work</a></div>
-      </article>
-    </div>
+    <form id="report-form" class="report-form">
+      <label for="who">How to reach you (optional)</label>
+      <input id="who" name="who" type="text" maxlength="120" autocomplete="off" placeholder="email or X handle — only if you want a reply">
+
+      <label for="page">Where (optional)</label>
+      <input id="page" name="page" type="text" maxlength="200" autocomplete="off" placeholder="Start page, wallet, miner…">
+
+      <label for="message">What happened</label>
+      <textarea id="message" name="message" required maxlength="4000" rows="7" placeholder="What you tried, what you expected, what you got."></textarea>
+
+      <p class="hp" aria-hidden="true"><label>Company <input type="text" name="company" tabindex="-1" autocomplete="off"></label></p>
+
+      <p class="actions"><button class="btn" type="submit" id="report-btn">Send</button></p>
+    </form>
+    <p id="report-out" class="note" hidden></p>
 
     <div class="note">
-      <p><strong>Today.</strong> Public test. No addresses, no minimum, no proposals. Anyone collecting “dev RUCK,” “listing liquidity,” or running a vote in a chat is not this project.</p>
+      <p>This does not show a personal inbox on the page. Do not paste keys, <code>wallet.dat</code>, or your node password.</p>
     </div>
-    <p><a href="faq.html">Short answers</a> · <a href="timeline.html">Calendar</a></p>
   </main>
-    <footer class="site-foot">
+  <footer class="site-foot">
     <div class="wrap">
       <strong>RuckCoin</strong>
       <nav class="foot-map" aria-label="All pages">
@@ -87,5 +81,7 @@
     </div>
   </footer>
   <script src="js/site.js"></script>
+  <script src="js/report-key.js"></script>
+  <script src="js/report.js"></script>
 </body>
 </html>
