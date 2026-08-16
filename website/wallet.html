@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Download the RuckCoin wallet</title>
-  <meta name="description" content="Download the official RuckCoin wallet. Made for first-time users. Your address, send, receive, optional mining. Needs a local node.">
+  <title>RuckCoin wallet — Windows, Linux, Mac</title>
+  <meta name="description" content="Official local wallet. Same zip on every computer. Pair it with the node for your OS. Public network not open.">
   <link rel="icon" href="img/mark.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
-  <div class="tape">Private test. The public network is not open. This wallet talks to a node on your computer.</div>
+  <div class="tape">Public TEST. This wallet talks only to a node on your computer. Test coins will be wiped. Nothing to buy.</div>
   <header class="nav">
     <div class="nav-inner">
       <a class="brand" href="index.html">
@@ -23,11 +23,13 @@
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
       <ul class="nav-links" id="menu">
         <li><a href="index.html">Home</a></li>
+        <li><a href="run.html">Start</a></li>
+        <li><a href="wallet.html" aria-current="page">Wallet</a></li>
+        <li><a href="mine.html">Mine</a></li>
         <li><a href="learn.html">How it works</a></li>
         <li><a href="paper.html">White paper</a></li>
         <li><a href="timeline.html">Timeline</a></li>
         <li><a href="veterans.html">Veterans</a></li>
-        <li><a href="wallet.html" aria-current="page">Wallet</a></li>
         <li><a href="explore.html">Look up</a></li>
         <li><a href="spec.html">Spec</a></li>
         <li><a href="faq.html">FAQ</a></li>
@@ -35,40 +37,36 @@
     </div>
   </header>
   <main id="main" class="wrap">
-    <p class="kicker">For your computer</p>
+    <p class="kicker">Same zip · every computer</p>
     <h1>The wallet</h1>
-    <p class="lede">This is the official RuckCoin wallet. It is built for people who have never used a coin before. Your address is on the first screen. Receive, send, and activity are in plain words. Mining is optional and explained before you click anything.</p>
+    <p class="lede">This is the official window. It runs on your computer and talks only to a node on that same computer. The zip is the same for Windows, Linux, and Mac. The <em>node</em> file is not — that depends on your OS.</p>
 
-    <div class="note">
-      <p><strong>What you need.</strong> A RuckCoin node running on the same computer (the program that keeps the notebook). The wallet is the friendly window. The node is the engine. The wallet never phones home. In Settings you can also tell the node to stay offline so it talks to no other computers. After public launch we will ship a one-click pack. Today: start the node, then open the wallet.</p>
+    <div class="os-pick">
+      <article class="os-card">
+        <p class="os-status ready">Windows</p>
+        <h2>Windows</h2>
+        <p>Unzip. Double-click <code>Open Wallet.bat</code> if a node is already running. Or <code>Start RuckCoin.bat</code> to try starting a node next to this folder (WSL + Linux node zip for now).</p>
+        <div class="actions"><a class="btn" href="downloads/ruckcoin-wallet.zip">Download wallet</a></div>
+      </article>
+      <article class="os-card">
+        <p class="os-status ready">Linux</p>
+        <h2>Linux</h2>
+        <p>Start the node from the <a href="run.html#linux">Linux node zip</a> first. Then <code>python3 ruck-wallet.py</code> from this zip and open http://127.0.0.1:8870/</p>
+        <div class="actions"><a class="btn" href="downloads/ruckcoin-wallet.zip">Download wallet</a></div>
+      </article>
+      <article class="os-card">
+        <p class="os-status build">macOS</p>
+        <h2>Mac</h2>
+        <p>Build the node from source, then the same zip: <code>python3 ruck-wallet.py</code>. There is no Mac node download yet.</p>
+        <div class="actions"><a class="btn" href="run.html#mac">Mac steps</a></div>
+      </article>
     </div>
 
-    <p class="actions">
-      <a class="btn" href="downloads/ruckcoin-wallet.zip">Download wallet</a>
-      <a class="btn ghost" href="learn.html">How RuckCoin works</a>
-    </p>
+    <p><a href="run.html">Full Start page (which file for which computer)</a></p>
 
-    <h2>After you download</h2>
-    <ol class="steps">
-      <li>
-        <div>
-          <h3>Unzip the folder</h3>
-          <p>Keep the files together. Prefer <code>Start RuckCoin.bat</code> (node + wallet). Or double-click <code>Open Wallet.bat</code> if the node is already running.</p>
-        </div>
-      </li>
-      <li>
-        <div>
-          <h3>Your browser opens to your address</h3>
-          <p>That long K… string is your mailbox. Copy it when someone should pay you. Never type it from memory.</p>
-        </div>
-      </li>
-      <li>
-        <div>
-          <h3>Skip Mine until you are curious</h3>
-          <p>You do not need to mine to hold or send RUCK. Mining is how new coins are created. The Mine tab explains it first.</p>
-        </div>
-      </li>
-    </ol>
+    <div class="note">
+      <p><strong>Need Python 3.</strong> The wallet is a small program, not an app-store install. It never phones home. In Settings you can tell the node to stay offline.</p>
+    </div>
 
     <h2>What is inside</h2>
     <div class="truths">

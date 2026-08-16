@@ -1,42 +1,51 @@
 RuckCoin wallet
 ===============
 
-This is the official local wallet. It runs on YOUR computer and talks to
-a RuckCoin node on the same computer.
+This zip is the official local wallet. Same files on Windows, Linux, and Mac.
+It talks only to a RuckCoin node on THIS computer. It does not phone home.
 
-You do not need to know how mining works to use it.
+The public network is not open yet. These programs are for practice.
 
-First time
-----------
-1. Install Python 3 if you do not have it (python.org).
-2. Start your RuckCoin node.
-3. Double-click "Open Wallet.bat" (Windows) or run:
-     python ruck-wallet.py
-4. Open the page it prints: http://127.0.0.1:8870
-5. If it says it cannot connect, open Settings and enter the same
-   user / password / port as in your node's ruck.conf.
+What you still need
+-------------------
+A node (the program that keeps the chain). That file depends on your computer:
 
-What you will see
------------------
-Home     Your address and how much you can spend
-Receive  Give this K address to get paid
-Send     Pay someone (cannot be undone)
-Activity A list of what moved
-Assets   Named tokens, if you have any
-Mine     Optional. How new coins are created. You can skip this.
-Settings Where the node lives on this computer
+  Windows  Wallet: this zip. Node: not a .exe yet. Use the Linux node zip
+           inside Windows Subsystem for Linux (WSL), or build from source.
+  Linux    This zip + ruckcoin-linux-x86_64.zip (Ubuntu 24.04, 64-bit).
+  macOS    This zip + build the node from source. No Mac binary yet.
 
-Offline
+Full picture: website/run.html or the Start page on the site.
+
+Windows
 -------
-The wallet never uses a website. It only talks to the node on this computer.
-In Settings you can turn on "Use offline" so the node also stops talking
-to other people's computers. You can still see your address and last
-known balance. New incoming payments and a send that the other person
-can see wait until you turn other computers back on.
+1. Install Python 3 from python.org. Tick "Add python.exe to PATH".
+2. Keep every file in this folder together.
+3. If a node is already running:  Open Wallet.bat
+4. To try starting a node + wallet:  Start RuckCoin.bat
+   Put the unzipped Linux node folder next to this folder if you use WSL.
+
+Linux
+-----
+1. Start the node from the Linux pack:  ./ruckd -daemon
+2. In this folder:  python3 ruck-wallet.py
+3. Open http://127.0.0.1:8870/
+
+macOS
+-----
+1. Build ravend from the GitHub source, then run it.
+2. python3 ruck-wallet.py
+3. Open http://127.0.0.1:8870/
+
+If the wallet cannot connect
+----------------------------
+Open Settings. Host 127.0.0.1, port 8866, same user and password as
+your ruck.conf. Do not use an example password from a web page.
 
 Safety
 ------
-- Never send your node password to a stranger.
-- Never type an address from memory. Copy it.
-- RuckCoin addresses start with K. Ravencoin starts with R.
-- This program only listens on 127.0.0.1 (this computer).
+- Addresses start with K. Ravencoin starts with R. Do not mix them.
+- Never type an address from memory.
+- This program only listens on 127.0.0.1.
+- Official files: this project’s site and github.com/madeagle100/RuckCoin.
+  A different genesis hash is a different coin.

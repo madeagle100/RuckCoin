@@ -106,4 +106,4 @@ When you add seeds later: 2–3 VPS, open 8867, put hostnames in `vSeeds`, rebui
 
 ## Still TODO before a public announcement
 
-Public site, white paper, and timeline: done (`website/`). Still needed: a wallet people can click, a local explorer, and a launch-day clock at height 0. GPU/stratum already works on the local test node. More seed nodes only if it takes off.
+Public site, paper, timeline, wallet UI, local explorer: done. Stranger packs: wallet zip (all OS) + Linux node zip + Start/Mine pages. Still needed for launch day: height-0 reset, tagged GitHub Release, Windows `ravend.exe`, published seed host, veterans address on the site. More seed nodes only if it takes off.

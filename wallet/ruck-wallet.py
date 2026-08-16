@@ -97,7 +97,6 @@ def json_out(handler: BaseHTTPRequestHandler, code: int, obj) -> None:
     handler.send_header("Content-Type", "application/json; charset=utf-8")
     handler.send_header("Content-Length", str(len(data)))
     handler.send_header("Cache-Control", "no-store")
-    handler.send_header("Access-Control-Allow-Origin", "*")
     handler.end_headers()
     handler.write_body(data)
 

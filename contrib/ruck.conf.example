@@ -1,0 +1,28 @@
+# RuckCoin node config
+# Copy this file to:
+#   Windows:  %APPDATA%\Ruck\ruck.conf
+#   Linux:    ~/.ruck/ruck.conf
+#   macOS:    ~/.ruck/ruck.conf
+#
+# The public network is not open yet. Leave addnode commented out
+# until the official site publishes a seed host.
+
+server=1
+listen=1
+txindex=1
+addressindex=1
+assetindex=1
+
+port=8867
+rpcport=8866
+rpcuser=ruck
+# Pick your own password. Never reuse an example password.
+rpcpassword=CHANGE_ME
+rpcallowip=127.0.0.1
+rpcbind=127.0.0.1
+
+# This computer can mine without waiting for other peers
+miningrequirespeers=0
+
+# Public TEST seed (home PC — it will go down). Remove for official launch.
+addnode=seed.ruckcoin.org:8867

@@ -13,7 +13,7 @@
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
-  <div class="tape">Private test only. There is nothing to buy.</div>
+  <div class="tape">Public TEST. Coins will be wiped at official launch. Nothing to buy.</div>
   <header class="nav">
     <div class="nav-inner">
       <a class="brand" href="index.html">
@@ -23,11 +23,13 @@
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
       <ul class="nav-links" id="menu">
         <li><a href="index.html">Home</a></li>
+        <li><a href="run.html">Start</a></li>
+        <li><a href="wallet.html">Wallet</a></li>
+        <li><a href="mine.html">Mine</a></li>
         <li><a href="learn.html">How it works</a></li>
         <li><a href="paper.html">White paper</a></li>
         <li><a href="timeline.html">Timeline</a></li>
         <li><a href="veterans.html">Veterans</a></li>
-        <li><a href="wallet.html">Wallet</a></li>
         <li><a href="explore.html">Look up</a></li>
         <li><a href="spec.html">Spec</a></li>
         <li><a href="faq.html" aria-current="page">FAQ</a></li>
@@ -42,7 +44,7 @@
 
     <details open>
       <summary>Can I buy RUCK right now?</summary>
-      <p>No. There is no sale, no ICO, and no official market. The public network is not open. Anyone offering you RUCK for cash today is not this project.</p>
+      <p>No. There is no sale, no ICO, and no official market. You can mine the <em>test</em> chain for practice. Those coins will be wiped. Anyone selling you RUCK for cash is not this project.</p>
     </details>
     <details>
       <summary>Is this Ravencoin?</summary>
@@ -82,11 +84,19 @@
     </details>
     <details>
       <summary>How do I get a wallet?</summary>
-      <p>Download it from the <a href="wallet.html">wallet page</a>. Unzip, start your node, then open <code>Open Wallet.bat</code>. Your K address is on the first screen. You do not need to mine to use it.</p>
+      <p>Same zip on every computer, from the <a href="wallet.html">wallet page</a>. Windows: <code>Open Wallet.bat</code>. Linux/Mac: <code>python3 ruck-wallet.py</code>. You still need a node for your OS — that is on the <a href="run.html">Start page</a>.</p>
+    </details>
+    <details>
+      <summary>Which download is for my computer?</summary>
+      <p><a href="run.html">Start — pick Windows, Linux, or Mac</a>. The wallet zip is shared. Only Linux has a ready node zip today (Ubuntu 24.04, 64-bit). Windows can run that Linux node inside WSL. Mac builds the node from source.</p>
     </details>
     <details>
       <summary>Can I run a node today?</summary>
-      <p>You can build the software from the public source. The public network is not open yet, so there is nothing useful to connect to. Wait for the published start.</p>
+      <p>Yes. Download the files on the <a href="run.html">Start</a> page, put <code>addnode=seed.ruckcoin.org:8867</code> in <code>ruck.conf</code>, and start your node. That seed is a home PC and will go down. This is a test. Official launch is still a fresh height 0.</p>
+    </details>
+    <details>
+      <summary>Can someone else launch “RuckCoin” with their own genesis while we test?</summary>
+      <p>They can copy the code. That is what open source means. A different genesis hash is a <em>different coin</em> — same as someone copying Bitcoin’s code and starting a new chain. It is not this project. Official RuckCoin is only the start time and genesis hash printed on this site and on <a href="https://github.com/madeagle100/RuckCoin">github.com/madeagle100/RuckCoin</a>. Until we publish that start, there is no official public chain. A clone that uses our <em>test</em> genesis still has our test coins in the builder wallet; those are not a public supply. We will reset at height 0.</p>
     </details>
     <details>
       <summary>Will you lock the veterans fund until the coin grows?</summary>

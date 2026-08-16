@@ -439,8 +439,39 @@ th {
 .site-foot a { color: var(--brass); }
 .site-foot small { color: #9aa392; display: block; max-width: 40rem; }
 
+.os-pick {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.4rem 0 2.4rem;
+}
+.os-card {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  padding: 1.15rem 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .45rem;
+}
+.os-card h2 { margin: 0 0 .15rem; font-size: 1.85rem; }
+.os-card p { margin: 0; color: var(--muted); }
+.os-card ol { margin: .35rem 0 .4rem; padding-left: 1.2rem; color: var(--ink); }
+.os-card .actions { margin-top: auto; padding-top: .7rem; }
+.os-status {
+  font-family: var(--mono);
+  font-size: .7rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin: 0;
+}
+.os-status.ready { color: var(--good); }
+.os-status.wait { color: var(--tape); }
+.os-status.build { color: var(--brass-dim); }
+
+.which-file td:first-child { font-weight: 700; white-space: nowrap; }
+
 @media (max-width: 800px) {
-  .hero, .truths, .mile { grid-template-columns: 1fr; }
+  .hero, .truths, .mile, .os-pick { grid-template-columns: 1fr; }
   .nav-toggle { display: block; }
   .nav-links {
     display: none;

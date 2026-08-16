@@ -17,12 +17,16 @@ Then visit http://127.0.0.1:8765/
 | File | What it is |
 | --- | --- |
 | `index.html` | Home |
+| `run.html` | Start — Windows / Linux / Mac (which file to get) |
 | `learn.html` | Plain-language walkthrough |
-| `paper.html` | White paper v1.0 |
+| `paper.html` | White paper |
 | `timeline.html` | March route |
 | `veterans.html` | Fund policy and (later) the public address |
-| `wallet.html` | Download the first-timer wallet |
+| `wallet.html` | Wallet (same zip on every OS) |
+| `mine.html` | GPU mining on your node, your K address |
 | `downloads/ruckcoin-wallet.zip` | Wallet zip |
+| `downloads/ruckcoin-linux-x86_64.zip` | Linux node (Ubuntu 24.04 x86_64) |
+| `downloads/SHA256SUMS.txt` | SHA-256 of the zips |
 | `spec.html` | Frozen numbers |
 | `faq.html` | Short answers |
 

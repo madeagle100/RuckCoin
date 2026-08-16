@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mine RuckCoin — KAWPOW</title>
+  <meta name="description" content="Mine RUCK with a GPU on your own node. Use your K address. Public network is not open.">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="tape">Public TEST. Mine on YOUR node after addnode=seed.ruckcoin.org:8867. Use your own K address. Coins will be wiped.</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="img/mark.svg" alt="">
+        <span><span class="brand-name">RUCKCOIN</span><span class="brand-sub">Issue plate · RUCK</span></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+      <ul class="nav-links" id="menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="run.html">Start</a></li>
+        <li><a href="wallet.html">Wallet</a></li>
+        <li><a href="mine.html" aria-current="page">Mine</a></li>
+        <li><a href="learn.html">How it works</a></li>
+        <li><a href="paper.html">White paper</a></li>
+        <li><a href="timeline.html">Timeline</a></li>
+        <li><a href="veterans.html">Veterans</a></li>
+        <li><a href="explore.html">Look up</a></li>
+        <li><a href="spec.html">Spec</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <p class="kicker">Optional · GPU</p>
+    <h1>Mine RUCK</h1>
+    <p class="lede">Mining is how new coins are created. You do not need to mine to hold or send RUCK. Run <em>your</em> node, connect with <code>addnode=seed.ruckcoin.org:8867</code>, then point the miner at <strong>your</strong> K address. Never point a miner at someone else’s RPC.</p>
+
+    <div class="os-pick">
+      <article class="os-card">
+        <p class="os-status ready">Any OS · first</p>
+        <h2>1. Node + address</h2>
+        <ol>
+          <li>Start a node and wallet. <a href="run.html">Start page</a> — pick Windows, Linux, or Mac.</li>
+          <li>Copy <em>your</em> K address from Receive. Never use an address from a chat.</li>
+          <li>In <code>ruck.conf</code> you already have <code>server=1</code> and an RPC password <em>you</em> chose.</li>
+        </ol>
+      </article>
+      <article class="os-card">
+        <p class="os-status ready">Windows · NVIDIA</p>
+        <h2>2. GPU miner</h2>
+        <p>KAWPOW miners that speak stratum work: kawpowminer, T-Rex, TeamRedMiner, Gminer.</p>
+        <ol>
+          <li>Run a small stratum proxy on this computer so the miner can talk to your node (see below).</li>
+          <li>Point the miner at <code>127.0.0.1</code> and <em>your</em> K address.</li>
+        </ol>
+      </article>
+      <article class="os-card">
+        <p class="os-status build">Linux / Mac</p>
+        <h2>2. Same idea</h2>
+        <p>Same algorithm, same address rule. Use a Linux KAWPOW miner or kawpowminer built for your box. Still your node, still your K address.</p>
+      </article>
+    </div>
+
+    <h2>Stratum (usual path)</h2>
+    <p>Most GPU miners do not speak the node’s raw RPC. A local proxy converts stratum → your node. Example using <a href="https://github.com/kralverde/ravencoin-stratum-proxy">kralverde’s stratum proxy</a> (Ravencoin-compatible; RuckCoin ports and address version are different):</p>
+    <div class="note">
+      <p><code>python stratum-converter.py 54325 127.0.0.1 YOUR_RPC_USER YOUR_RPC_PASSWORD 8866 false</code></p>
+      <p>Then the miner:</p>
+      <p><code>kawpowminer -P stratum+tcp://YOUR_K_ADDRESS.worker@127.0.0.1:54325</code></p>
+      <p>T-Rex: <code>t-rex -a kawpow -o stratum+tcp://127.0.0.1:54325 -u YOUR_K_ADDRESS -p x</code></p>
+    </div>
+    <p>Replace every <code>YOUR_*</code> with values from <em>your</em> wallet and <em>your</em> <code>ruck.conf</code>. There is no project RPC password and no project mining address.</p>
+
+    <h2>GBT (no proxy)</h2>
+    <p>Some miners can pull a template straight from the node (<code>getblocktemplate</code>). Solo, with no peers, the node needs <code>bypassdownload=1</code> in <code>ruck.conf</code> or it will say it is not connected.</p>
+
+    <h2>If blocks get rejected</h2>
+    <p>A fast GPU can find blocks quicker than one per minute. The node may say <code>time-too-old</code>. That is the clock rule, not a broken miner. Slow down or wait; do not change the money rules to chase speed.</p>
+
+    <div class="note alert">
+      <p><strong>This is the public test, not official launch.</strong> Coins you mine now will not carry over. When the public chain starts at height 0, start over with a new address on that chain.</p>
+    </div>
+    <p><a href="run.html">Start the node first</a> · <a href="wallet.html">Wallet</a></p>
+  </main>
+  <footer class="site-foot">
+    <div class="wrap">
+      <strong>RuckCoin</strong>
+      <small>Not an offer to sell coins. Mine only to your own node and your own K address.</small>
+    </div>
+  </footer>
+  <script src="js/site.js"></script>
+</body>
+</html>

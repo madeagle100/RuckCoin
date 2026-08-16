@@ -1,0 +1,4 @@
+#!/bin/sh
+# User-facing name. The binary is still raven-cli.
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec "$DIR/raven-cli" "$@"

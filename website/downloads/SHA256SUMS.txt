@@ -1,0 +1,6 @@
+# RuckCoin downloads. Verify: Get-FileHash -Algorithm SHA256 <file>
+# Official: this site and https://github.com/madeagle100/RuckCoin
+# Public TEST. Coins will be wiped at official launch.
+
+c1d98b9684d5667165d540668c0e70dfc8df9fc7aa7686815b583753fc0dbb57  ruckcoin-linux-x86_64.zip
+58529e105d769010edcd4e9983397371630e088998442d06ba3fcee70a987ec2  ruckcoin-wallet.zip
