@@ -93,16 +93,9 @@ Veterans support is **option A** (social, not consensus):
 
 ## Network posture
 
-**One local test node for now.** Extra public seeds only if the coin actually gets miners. That is enough to test wallets, RPC, assets, and (later) a GPU miner against `127.0.0.1:8867`.
+**One home seed for the public test.** Strangers connect with `addnode=seed.ruckcoin.org:8867`. RPC stays on localhost with a password you choose — never publish RPC user/password.
 
-| Role | Where |
-| --- | --- |
-| Test daemon | Ubuntu WSL: `/root/src/ruckcoin/src/ravend -datadir=/home/ruck/.ruck` |
-| Config | `ruck.conf` in that datadir (`raven.conf` still works if `ruck.conf` is missing) |
-| P2P | `127.0.0.1:8867` |
-| RPC | `127.0.0.1:8866` (user `ruck` / pass `ruckdev`, localhost only) |
-
-When you add seeds later: 2–3 VPS, open 8867, put hostnames in `vSeeds`, rebuild. Do not announce a public network on a single home PC.
+When you add more seeds later: 2–3 VPS, open 8867, put hostnames in `vSeeds`, rebuild. A single home PC will go down.
 
 ## Still TODO before a public announcement
 

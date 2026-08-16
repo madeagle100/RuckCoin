@@ -178,7 +178,7 @@ A RuckCoin **payment address** is a short string that starts with **`K`**.
 
 Example shape (do not send to this; it is a format example):
 
-``
+`K` plus a long string of letters and numbers (copy it, do not invent one)
 
 Ravencoin addresses start with **`R`**. We changed the version byte on purpose so a tired person, or a confused exchange, is less likely to mix the two.
 
