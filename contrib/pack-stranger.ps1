@@ -7,13 +7,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path $PSScriptRoot -Parent
-$deskSite = "\OneDrive\Desktop\RuckCoin\website"
 if (Test-Path (Join-Path $root "website\index.html")) {
     $site = Join-Path $root "website"
-} elseif (Test-Path (Join-Path $deskSite "index.html")) {
-    $site = $deskSite
 } else {
-    throw "website/ not found"
+    throw "website/ not found next to the repo root"
 }
 $out = Join-Path $site "downloads"
 New-Item -ItemType Directory -Force -Path $out | Out-Null
