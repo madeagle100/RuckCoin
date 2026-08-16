@@ -126,3 +126,22 @@ CMakeLists.txt
 
 miners/
 
+# Operator / private — keep on this machine, never publish
+STATE.md
+start-node.sh
+build-node.sh
+run-build.sh
+watch-build.sh
+contrib/test-node.ps1
+contrib/start-all.ps1
+contrib/open-test-p2p.ps1
+contrib/wallet-dashboard.py
+contrib/setup-solo-mine.sh
+contrib/gbt-test.sh
+contrib/smoke-test.sh
+contrib/ruck.conf
+contrib/build-qt.sh
+desktop-shot*.png
+desktop-shot*.jpg
+
+

@@ -7,8 +7,5 @@ fi
 if [ -x "$DIR/raven-cli" ]; then
   exec "$DIR/raven-cli" "$@"
 fi
-if [ -x /root/src/ruckcoin/src/raven-cli ]; then
-  exec /root/src/ruckcoin/src/raven-cli "$@"
-fi
 echo "ruck-cli: raven-cli binary not found" >&2
 exit 1
