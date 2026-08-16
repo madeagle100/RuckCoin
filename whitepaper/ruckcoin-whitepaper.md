@@ -106,7 +106,7 @@ The project **will**, at public launch:
 - publish **one** veterans address on the public site,
 - say it is for veterans, including homeless veterans,
 - put an **optional** “add a donation” line in the official wallet (off unless you turn it on; you pick the amount),
-- and publish outflows from that address (who received help, and the transaction id).
+- and publish outflows from that address (date, amount, category such as housing or clothes or a named organization, and the transaction id — not a person’s name or story).
 
 Other wallets and raw commands do not have to donate. We will not pretend they do.
 
