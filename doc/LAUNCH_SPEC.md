@@ -97,6 +97,12 @@ Veterans support is **option A** (social, not consensus):
 
 When you add more seeds later: 2–3 VPS, open 8867, put hostnames in `vSeeds`, rebuild. A single home PC will go down.
 
+## Security (ported from 2Miners Ravencoin 4.6.1.1-hf1)
+
+- KAWPOW header `nHeight` must equal the block's real chain height (`bad-blk-height`). Enforced from the first KAWPOW block. Ravencoin's 4,487,775 checkpoint is **not** used.
+- Asset and restricted-asset DBs wipe on `-reindex-chainstate` as well as full `-reindex`.
+- Client version **4.6.1.1**. Existing honest test blocks already set `nHeight` correctly; no new genesis required for this patch.
+
 ## Still TODO before a public announcement
 
 Public site, paper, timeline, wallet UI, local explorer: done. Stranger packs: wallet zip (all OS) + Linux node zip + Start/Mine pages. Still needed for launch day: height-0 reset, tagged GitHub Release, Windows `ravend.exe`, published seed host, veterans address on the site. More seed nodes only if it takes off.

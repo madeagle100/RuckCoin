@@ -4123,6 +4123,14 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     assert(pindexPrev != nullptr);
     const int nHeight = pindexPrev->nHeight + 1;
 
+    // KAWPOW headers carry nHeight into the PoW hash and DAG epoch.
+    // Require it to match the block's real position (2Miners hf1 / Aug 2026).
+    // No RVN checkpoint copied. Enforce from the first KAWPOW block.
+    if (block.nTime >= nKAWPOWActivationTime && block.nHeight != (uint32_t)nHeight) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-blk-height", false,
+                         "block header nHeight does not match chain height");
+    }
+
     //If this is a reorg, check that it is not too deep
     int nMaxReorgDepth = gArgs.GetArg("-maxreorg", GetParams().MaxReorganizationDepth());
     int nMinReorgPeers = gArgs.GetArg("-minreorgpeers", GetParams().MinReorganizationPeers());

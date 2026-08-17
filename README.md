@@ -2,7 +2,7 @@
 
 RuckCoin is a mineable, asset-capable cryptocurrency forked from [Ravencoin](https://github.com/RavenProject/Ravencoin) (Bitcoin code lineage). It is intended to support veterans through governance and on-chain utility.
 
-This tree is based on current Ravencoin Core (`master` as of 2026-08) and rebranded as an independent network. It is **not** a Ravencoin chain split.
+This tree is based on Ravencoin Core 4.6.1.0 (`master` as of early 2026-08), plus the 2Miners **4.6.1.1-hf1** KAWPOW `nHeight` check and asset-DB wipe on `-reindex-chainstate`. Ravencoin mainnet checkpoints are not used. It is **not** a Ravencoin chain split.
 
 Public site (white paper, timeline, FAQ): [website/](website/). Long form: [whitepaper/ruckcoin-whitepaper.md](whitepaper/ruckcoin-whitepaper.md). Launch identity: [doc/LAUNCH_SPEC.md](doc/LAUNCH_SPEC.md). **You do not need to put cash in to launch** — this is a mineable chain.
 
