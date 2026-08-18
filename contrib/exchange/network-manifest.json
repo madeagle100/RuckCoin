@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "project": {
+    "name": "RuckCoin",
+    "ticker": "RUCK",
+    "website": "https://ruckcoin.org/",
+    "source": "https://github.com/madeagle100/RuckCoin"
+  },
+  "network_status": "public-test",
+  "production_listing_ready": false,
+  "release": {
+    "current_test_tag": "test-2026-08-15",
+    "daemon_binary": "ravend",
+    "cli_binary": "raven-cli",
+    "daemon_wrapper": "ruckd",
+    "cli_wrapper": "ruck-cli",
+    "client_version": 4060101,
+    "protocol_version": 70028,
+    "subversion_prefix": "/RuckCoin:4.6.1.1/"
+  },
+  "network": {
+    "rpc_chain_name": "main",
+    "message_start_hex": "5255434b",
+    "p2p_port": 8867,
+    "rpc_port": 8866,
+    "public_test_seed": "seed.ruckcoin.org:8867",
+    "genesis": {
+      "hash": "000000862510f4b80dc2ecd874b5603917424b9289d26d14e0f63e70e9cc9a50",
+      "merkle_root": "2f92ddefe4842df446b6dc736ce3f3d837c0b3ebeb01a330b7d34172aa4b7e24",
+      "time": 1786665600,
+      "time_utc": "2026-08-14T00:00:00Z",
+      "nonce": 17493341,
+      "bits": "1e00ffff",
+      "version": 4,
+      "coinbase_spendable": false
+    }
+  },
+  "money": {
+    "decimals": 8,
+    "atomic_unit_name": "ruckoshi",
+    "coin_satoshis": 100000000,
+    "initial_subsidy_satoshis": 500000000000,
+    "halving_interval_blocks": 2100000,
+    "consensus_max_money_satoshis": 2100000000000000000,
+    "coinbase_maturity_blocks": 100
+  },
+  "address_formats": {
+    "pubkey_address_version": 45,
+    "pubkey_address_prefix": "K",
+    "script_address_version": 107,
+    "script_address_prefix": "k",
+    "secret_key_version": 128,
+    "bip44_coin_type_unofficial": 1776,
+    "payment_uri_scheme": "ruck"
+  },
+  "exchange_policy": {
+    "minimum_deposit_confirmations": 61,
+    "withdrawals_require_healthy_peer_quorum": true,
+    "pause_below_peer_count": 4,
+    "maximum_automatic_reorg_depth_blocks": 60,
+    "minimum_reorg_peer_count": 4,
+    "minimum_reorg_tip_age_seconds": 43200
+  },
+  "burns": [
+    {"purpose": "issue_asset", "fee_ruck": "500", "address": "KVUdNCN27k6K9nQZMoP3oH4Lu9G5RZK3Ui"},
+    {"purpose": "reissue_asset", "fee_ruck": "100", "address": "KLXEKc36VJzFDAHp1iknodm8fGCDLtjLk9"},
+    {"purpose": "issue_subasset", "fee_ruck": "100", "address": "KN2d83sgWNUBVoMie4M3gfprPgjMJqkKkH"},
+    {"purpose": "issue_unique_asset", "fee_ruck": "5", "address": "KTLtFJXxuCAmavuF6nm7TVZpD54TLEN8mV"},
+    {"purpose": "issue_message_channel", "fee_ruck": "100", "address": "KDuMvtTY8nGY9sTttYYaGN82xk7nhGbL13"},
+    {"purpose": "issue_qualifier", "fee_ruck": "1000", "address": "KLQhZi9xxvK4rRCj912NG2jTLavFcnMRZS"},
+    {"purpose": "issue_subqualifier", "fee_ruck": "100", "address": "KWEwQoGRqEvYH4cAXmom9rCaEXpZiffVES"},
+    {"purpose": "issue_restricted_asset", "fee_ruck": "1500", "address": "KRQiWua21ciB6af8jNjdWMm777qA4HoYmy"},
+    {"purpose": "tag_address", "fee_ruck": "0.1", "address": "KQaccmhNwTjCZxn3DPAPjzMXQ1TKxN7bgx"},
+    {"purpose": "global_burn", "fee_ruck": null, "address": "KAf8usFDdmMQJ1yoxnvo9AFnDkKeA1bYi1"}
+  ],
+  "warnings": [
+    "This manifest describes the disposable public-test chain, not the future production chain.",
+    "Test RUCK has no promised value and must not be credited as production RUCK.",
+    "The production release must publish its own final manifest and chain identity."
+  ]
+}

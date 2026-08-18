@@ -1,6 +1,6 @@
 # RuckCoin launch spec (draft)
 
-Frozen chain identity for public launch. Do not change these after people start mining.
+Draft launch identity. The values below currently identify the disposable public-test chain. Keep that test chain available for testing, but publish and verify a final production manifest before a real launch. Do not change production consensus values after people start mining the production chain.
 
 ## Do you need your own cash?
 
@@ -56,9 +56,10 @@ Skip the DEX until there is a real reason. Launch does not depend on it.
   | Action | Burn |
   | --- | --- |
   | Issue asset | 500 RUCK |
-  | Reissue / sub / channel | 100 |
+  | Reissue / sub-asset / channel | 100 |
   | Unique | 5 |
   | Qualifier | 1000 |
+  | Sub-qualifier | 100 |
   | Restricted | 1500 |
   | Tag | 0.1 |
 
@@ -103,6 +104,6 @@ When you add more seeds later: 2–3 VPS, open 8867, put hostnames in `vSeeds`, 
 - Asset and restricted-asset DBs wipe on `-reindex-chainstate` as well as full `-reindex`.
 - Client version **4.6.1.1**. Existing honest test blocks already set `nHeight` correctly; no new genesis required for this patch.
 
-## Still TODO before a public announcement
+## Still TODO before a production announcement
 
-Public site, paper, timeline, wallet UI, local explorer: done. Stranger packs: wallet zip (all OS) + Linux node zip + Start/Mine pages. Still needed for launch day: height-0 reset, tagged GitHub Release, Windows `ravend.exe`, published seed host, veterans address on the site. More seed nodes only if it takes off.
+Public site, paper, timeline, wallet UI, local explorer: done. Stranger packs: wallet zip (all OS) + Linux node zip + Start/Mine pages. Preserve the current test blocks, wallets, and coins while testing continues. Still needed for launch day: a final production identity that cannot reconnect to test history, a clean production datadir, tagged GitHub Release, reproducible binaries, public explorer, multiple independent seeds, and the final public policy addresses. See [EXCHANGE_RELEASE_CHECKLIST.md](EXCHANGE_RELEASE_CHECKLIST.md).

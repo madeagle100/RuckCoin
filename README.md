@@ -4,9 +4,9 @@ RuckCoin is a mineable, asset-capable cryptocurrency forked from [Ravencoin](htt
 
 This tree is based on Ravencoin Core 4.6.1.0 (`master` as of early 2026-08), plus the 2Miners **4.6.1.1-hf1** KAWPOW `nHeight` check and asset-DB wipe on `-reindex-chainstate`. Ravencoin mainnet checkpoints are not used. It is **not** a Ravencoin chain split.
 
-Public site (white paper, timeline, FAQ): [website/](website/). Long form: [whitepaper/ruckcoin-whitepaper.md](whitepaper/ruckcoin-whitepaper.md). Launch identity: [doc/LAUNCH_SPEC.md](doc/LAUNCH_SPEC.md). **You do not need to put cash in to launch** — this is a mineable chain.
+Public site (white paper, timeline, FAQ): [website/](website/). Long form: [whitepaper/ruckcoin-whitepaper.md](whitepaper/ruckcoin-whitepaper.md). Launch identity: [doc/LAUNCH_SPEC.md](doc/LAUNCH_SPEC.md). Exchange engineers should start with [doc/EXCHANGE_INTEGRATION.md](doc/EXCHANGE_INTEGRATION.md). Future developers and AI assistants should read the sanitized [doc/STATE.md](doc/STATE.md). **You do not need to put cash in to launch** — this is a mineable chain.
 
-One local test node for now. Extra public seeds only if it takes off. From PowerShell: `contrib/test-node.ps1 status`
+The current network is a disposable public test with one best-effort seed. It is not production listing-ready, and its test balances must not carry into a future production launch. Extra independent seeds and a public explorer are production blockers. From PowerShell: `contrib/test-node.ps1 status`
 
 ## Coin parameters
 

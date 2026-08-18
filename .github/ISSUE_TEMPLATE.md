@@ -1,10 +1,8 @@
 <!--- Remove sections that do not apply -->
 
-This issue tracker is only for technical issues related to Ravencoin.
+This issue tracker is for public technical issues related to RuckCoin.
 
-General Ravencoin questions and/or support requests and are best directed to the [Ravencoin Discord](https://discord.gg/jn6uhur)).
-
-For reporting security issues, please direct message one of the core developers in discord.
+Do not publish an unpatched vulnerability here. Follow [SECURITY.md](../SECURITY.md) and use the private report form at https://ruckcoin.org/report.html.
 
 ### Describe the issue
 
@@ -23,7 +21,7 @@ Tell us what happens instead
 ### Screenshots.
 If the issue is related to the GUI, screenshots can be added to this issue via drag & drop.
 
-### What version of Ravencoin are you using?
+### What version of RuckCoin are you using?
 List the version number/commit ID, and if it is an official binary, self compiled or a distribution package such as PPA.
 
 ### Machine specs:

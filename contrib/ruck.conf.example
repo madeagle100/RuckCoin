@@ -4,8 +4,8 @@
 #   Linux:    ~/.ruck/ruck.conf
 #   macOS:    ~/.ruck/ruck.conf
 #
-# The public network is not open yet. Leave addnode commented out
-# until the official site publishes a seed host.
+# This example currently connects to the disposable public-test chain.
+# Test RUCK has no promised value and must not carry into production.
 
 server=1
 listen=1
@@ -24,5 +24,5 @@ rpcbind=127.0.0.1
 # This computer can mine without waiting for other peers
 miningrequirespeers=0
 
-# Public TEST seed (home PC — it will go down). Remove for official launch.
+# Best-effort public TEST seed. Replace it with the final production seeds at launch.
 addnode=seed.ruckcoin.org:8867
