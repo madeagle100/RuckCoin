@@ -35,11 +35,9 @@ class AssetAuthTest(RavenTestFramework):
         self.extra_args = [['-assetindex', '-fallbackfee=0.0001'], ['-assetindex', '-fallbackfee=0.0001']]
 
     def activate_assets_and_assetauth(self):
-        self.log.info("Generating RVN and activating assets + assetauth...")
+        self.log.info("Mining mature coinbase (assets + assetauth are active from genesis)...")
         n0 = self.nodes[0]
-        n0.generate(1)
-        self.sync_all()
-        n0.generate(431)
+        n0.generate(101)
         self.sync_all()
         assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['assets']['status'])
         assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['assetauth']['status'])
@@ -431,24 +429,7 @@ class AssetAuthTest(RavenTestFramework):
         assert_equal(info['known'], True)
         assert_equal(info['owner_assets'], ["PERSIST!"])
 
-    def test_pre_activation_rejection(self):
-        # Note: this runs FIRST, before activation
-        self.log.info("Testing that P2AH outputs are rejected before activation...")
-        n0 = self.nodes[0]
-
-        n0.generate(1)
-        self.sync_all()
-
-        # createassetauthaddress is a pure function and works before activation
-        # (using a syntactically valid owner name; the asset doesn't need to exist)
-        result = n0.createassetauthaddress(1, ["PREACTIVATION!"])
-        p2ah_addr = result['address']
-
-        # But sending to a P2AH address is rejected by policy/consensus before activation
-        assert_raises_rpc_error(None, None, n0.sendtoaddress, p2ah_addr, 1)
-
     def run_test(self):
-        self.test_pre_activation_rejection()
         self.activate_assets_and_assetauth()
         self.test_create_address()
         self.test_sorted_canonical_address()

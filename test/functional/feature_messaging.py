@@ -18,12 +18,10 @@ class MessagingTest(RavenTestFramework):
         self.extra_args = [['-assetindex'], ['-assetindex'], ['-assetindex']]
 
     def activate_messaging(self):
-        self.log.info("Generating RVN for node[0] and activating messaging...")
+        self.log.info("Mining mature coinbase (messaging is active from genesis)...")
         n0 = self.nodes[0]
 
-        n0.generate(1)
-        self.sync_all()
-        n0.generate(431)
+        n0.generate(101)
         self.sync_all()
         assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['messaging_restricted']['status'])
 

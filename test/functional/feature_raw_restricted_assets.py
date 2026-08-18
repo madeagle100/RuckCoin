@@ -264,9 +264,9 @@ class RawRestrictedAssetsTest(RavenTestFramework):
         self.extra_args = [['-assetindex'], ['-assetindex']]
 
     def activate_restricted_assets(self):
-        self.log.info("Generating RVN and activating restricted assets...")
+        self.log.info("Mining mature coinbase (restricted assets are active from genesis)...")
         n0 = self.nodes[0]
-        n0.generate(432)
+        n0.generate(101)
         self.sync_all()
         n1 = self.nodes[1]
         n0.sendtoaddress(n1.getnewaddress(), 2500)

@@ -595,11 +595,13 @@ BOOST_FIXTURE_TEST_SUITE(asset_tx_tests, BasicTestingSetup)
         BOOST_CHECK(!fCheck);
         BOOST_CHECK(state.GetRejectReason() == "bad-txns-coinbase-contains-asset-txes");
 
-        // Setting the coinbase check to false
-        // This check should now pass the CheckTransaction call
+        // RuckCoin consensus: coinbase asset check is always active from genesis.
+        // Clearing the cache flag does not disable the rule.
         SetEnforcedCoinbase(false);
-        fCheck = CheckTransaction(tx, state, true);
-        BOOST_CHECK(fCheck);
+        CValidationState stateAlwaysOn;
+        fCheck = CheckTransaction(tx, stateAlwaysOn, true);
+        BOOST_CHECK(!fCheck);
+        BOOST_CHECK(stateAlwaysOn.GetRejectReason() == "bad-txns-coinbase-contains-asset-txes");
 
         // Remove wallet used for testing
         bitdb.Flush(true);

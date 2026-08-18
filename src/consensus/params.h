@@ -8,6 +8,7 @@
 #define RAVEN_CONSENSUS_PARAMS_H
 
 #include "uint256.h"
+#include <limits>
 #include <map>
 #include <string>
 
@@ -42,6 +43,10 @@ struct BIP9Deployment {
     uint32_t nOverrideMinerConfirmationWindow;
     /** Use to override the the activation threshold on a specific BIP */
     uint32_t nOverrideRuleChangeActivationThreshold;
+    /** Timeout far in the future (never expires). */
+    static constexpr int64_t NO_TIMEOUT = std::numeric_limits<int64_t>::max();
+    /** nStartTime value: the deployment is active from genesis (no BIP9 wait). */
+    static constexpr int64_t ALWAYS_ACTIVE = -1;
 };
 
 /**

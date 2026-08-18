@@ -24,12 +24,17 @@ Omit --persistent-dir to use a temporary datadir (removed after the run unless
 import math
 import os
 import shutil
+import time
 
 from test_framework.test_framework import RavenTestFramework
 from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
+    connect_nodes_bi,
     initialize_data_dir,
+    set_node_times,
+    sync_blocks,
+    sync_mempools,
 )
 
 
@@ -70,6 +75,7 @@ class AssetAuthStressTest(RavenTestFramework):
             self.log.info("Using persistent chain datadir %s" % self.persistent_dir)
             for i in range(self.num_nodes):
                 initialize_data_dir(self.options.tmpdir, i)
+            self._prepare_persistent_mempools()
             self.run_id = self._load_run_counter()
             self.log.info("Persistent run id %d (block height will accumulate)" % self.run_id)
         else:
@@ -103,43 +109,128 @@ class AssetAuthStressTest(RavenTestFramework):
         base = "".join(c for c in prefix.upper() if c.isalnum())[:4]
         return "%s%04X%04X" % (base.ljust(4, "X"), self.tag_epoch & 0xFFFF, self.scenario_counter & 0xFFFF)
 
-    def recover_persistent_state(self):
-        """Reconcile nodes after an aborted prior run left mempools diverged."""
+    def _mempool_dat_paths(self, node_index):
+        base = os.path.join(self.persistent_dir, "node%d" % node_index)
+        for rel in ("regtest/mempool.dat", "mempool.dat"):
+            yield os.path.join(base, rel)
+
+    def _prepare_persistent_mempools(self):
+        """Do not reload divergent mempools from an aborted prior run."""
+        no_persist = "-persistmempool=0"
+        self.extra_args = [
+            (args + [no_persist]) if no_persist not in args else args
+            for args in self.extra_args
+        ]
+        for i in range(self.num_nodes):
+            for path in self._mempool_dat_paths(i):
+                if os.path.isfile(path):
+                    self.log.info("Removing stale mempool state %s" % path)
+                    os.remove(path)
+
+    def reconcile_mempools(self):
+        """Mine until all nodes share the same mempool."""
+        max_attempts = 5
+        for attempt in range(max_attempts):
+            pools = [set(n.getrawmempool()) for n in self.nodes]
+            if pools[0] == pools[1]:
+                if attempt:
+                    self.log.info("Mempools reconciled after %d block(s)" % attempt)
+                return
+            sizes = [len(p) for p in pools]
+            self.log.info("Mempool mismatch (sizes %s); mining reconciliation block" % sizes)
+            self.mine(self.nodes[0], 1)
+            sync_blocks(self.nodes)
+
+        pools = [set(n.getrawmempool()) for n in self.nodes]
+        if pools[0] == pools[1]:
+            return
+
+        only0 = pools[0] - pools[1]
+        only1 = pools[1] - pools[0]
+        self.log.warning("Mempools still differ after %d blocks (only node0=%d only node1=%d)" % (
+            max_attempts, len(only0), len(only1)))
+        if only1 and not only0:
+            self.mine(self.nodes[1], 1)
+        elif only0:
+            self.mine(self.nodes[0], 1)
+        sync_blocks(self.nodes)
+
+        pools = [set(n.getrawmempool()) for n in self.nodes]
+        if pools[0] != pools[1]:
+            raise AssertionError(
+                "Mempool reconciliation failed: %s vs %s txs" % (len(pools[0]), len(pools[1])))
+
+    def setup_network(self):
+        self.log.info("Running setup_network")
+        self.setup_nodes()
+        for i in range(self.num_nodes - 1):
+            connect_nodes_bi(self.nodes, i, i + 1)
+        sync_blocks(self.nodes)
+        if self.persistent_dir:
+            self.reconcile_mempools()
+        sync_mempools(self.nodes)
+
+    def ensure_persistent_funds(self):
+        """Keep node0 funded for 500 RVN asset-issue burns on a long-lived chain."""
         if not self.persistent_dir:
             return
-        try:
-            self.sync_all()
-        except AssertionError:
-            self.log.info("Mempool out of sync from prior run; mining reconciliation block")
-            self.nodes[0].generate(1)
-            self.sync_all()
+        n0, n1 = self.nodes[0], self.nodes[1]
+        min_balance = 550
+        balance = n0.getbalance()
+        if balance >= min_balance:
+            return
+        needed = min_balance - balance
+        n1_bal = n1.getbalance()
+        self.log.info("Node0 balance low (%.8f); need %.8f RVN (node1 has %.8f)" % (balance, needed, n1_bal))
+        if n1_bal > 1:
+            send_amount = min(needed, n1_bal - 1)
+            n1.sendtoaddress(n0.getnewaddress(), send_amount)
+            self.mine(n1, 1)
+            sync_blocks(self.nodes)
+            if n0.getbalance() >= min_balance:
+                return
+        for attempt in range(12):
+            if n0.getbalance() >= min_balance:
+                return
+            self.log.info("Mining coinbase maturity batch %d for node0 funds" % (attempt + 1))
+            self._mine_blocks(n0, 101)
+        if n0.getbalance() < min_balance:
+            raise AssertionError("Node0 balance still %.8f after coinbase maturity mining" % n0.getbalance())
+
+    def mine(self, node, count=1):
+        self._mine_blocks(node, count)
+
+    def _mine_blocks(self, node, count):
+        for _ in range(count):
+            tip_time = max(node.getblockchaininfo()['mediantime'], int(time.time()))
+            set_node_times(self.nodes, tip_time + 1)
+            node.generate(1)
+        sync_blocks(self.nodes)
 
     def activate(self):
         n0 = self.nodes[0]
         info = n0.getblockchaininfo()
         assets_status = info['bip9_softforks']['assets']['status']
         auth_status = info['bip9_softforks']['assetauth']['status']
-        if assets_status == "active" and auth_status == "active":
-            self.log.info("Assets/assetauth already active at height %d — continuing chain" % info['blocks'])
-            return
-        self.log.info("Activating assets + assetauth (height %d)" % info['blocks'])
-        needed = max(0, 432 - info['blocks'])
-        if needed:
-            n0.generate(needed)
+        assert_equal("active", assets_status)
+        assert_equal("active", auth_status)
+        if info['blocks'] < 101:
+            self.log.info("Mining mature coinbase (assets/assetauth active from genesis, height %d)" % info['blocks'])
+            self.mine(n0, 101 - info['blocks'])
             self.sync_all()
-        assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['assets']['status'])
-        assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['assetauth']['status'])
+        else:
+            self.log.info("Assets/assetauth active from genesis at height %d" % info['blocks'])
 
     def stress_simple_spend(self):
         n0, n1 = self.nodes[0], self.nodes[1]
         tag = self.unique_tag("STR")
         n0.issue(tag, 1000)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         p2ah = n0.addassetauthaddress(1, [tag + "!"])
         n0.sendtoaddress(p2ah['address'], 20)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         dest = n1.getnewaddress()
@@ -149,7 +240,7 @@ class AssetAuthStressTest(RavenTestFramework):
         verify = n0.verifyassetauth(n0.getrawtransaction(spend['txid']))
         assert_equal(verify['valid'], True)
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
         assert_equal(float(n1.getreceivedbyaddress(dest)), 19.5)
 
@@ -159,7 +250,7 @@ class AssetAuthStressTest(RavenTestFramework):
         leaf = self.unique_tag("LF") + "!"
         n0.issue(root.replace("!", ""), 100)
         n0.issue(leaf.replace("!", ""), 100)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         p2ah_root = n0.addassetauthaddress(1, [root])
@@ -167,7 +258,7 @@ class AssetAuthStressTest(RavenTestFramework):
 
         n0.transfer(leaf, 1, p2ah_root['address'])
         n0.sendtoaddress(p2ah_leaf['address'], 5)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         dest = n1.getnewaddress()
@@ -181,7 +272,7 @@ class AssetAuthStressTest(RavenTestFramework):
         verify = n0.verifyassetauth(n0.getrawtransaction(spend['txid']))
         assert_equal(verify['valid'], True)
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         dest2 = n1.getnewaddress()
@@ -189,7 +280,7 @@ class AssetAuthStressTest(RavenTestFramework):
         assert root in spend2['owner_assets_moved']
         assert leaf in spend2['owner_assets_moved']
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
     def stress_multisig_and_multi_utxo(self):
@@ -200,14 +291,14 @@ class AssetAuthStressTest(RavenTestFramework):
         n0.issue(a.replace("!", ""), 100)
         n0.issue(b.replace("!", ""), 100)
         n0.issue(c.replace("!", ""), 100)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         p2ah = n0.addassetauthaddress(2, [a, b, c])
 
         n0.sendtoaddress(p2ah['address'], 3)
         n0.sendtoaddress(p2ah['address'], 4)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         assert_equal(len(n0.listassetauthutxos(p2ah['address'])), 2)
@@ -220,7 +311,7 @@ class AssetAuthStressTest(RavenTestFramework):
         p2ah_inputs = [vin for vin in rawtx['vin'] if 'assetAuthPreimage' in vin]
         assert_equal(len(p2ah_inputs), 2)
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
     def stress_asset_on_p2ah(self):
@@ -229,19 +320,19 @@ class AssetAuthStressTest(RavenTestFramework):
         token = self.unique_tag("TOK")
         n0.issue(owner.replace("!", ""), 100)
         n0.issue(token, 1000)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         p2ah = n0.addassetauthaddress(1, [owner])
         n0.transfer(token, 500, p2ah['address'])
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         dest = n1.getnewaddress()
         spend = n0.spendassetauth(p2ah['address'], {dest: {'transfer': {token: 100}}})
         assert_equal(spend['owner_assets_moved'], [owner])
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
         assert_equal(float(n1.listmyassets(token)[token]), 100.0)
 
@@ -259,21 +350,21 @@ class AssetAuthStressTest(RavenTestFramework):
         for name in (gate_a, gate_b, gate_c, vault_a, vault_b, vault_c):
             n0.issue(name.replace("!", ""), 100)
         n0.issue(heavy_asset, 10000)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         p2ah_outer = n0.addassetauthaddress(2, [gate_a, gate_b, gate_c])
         p2ah_inner = n0.addassetauthaddress(1, [vault_a, vault_b, vault_c])
 
         n0.transfer(vault_a, 1, p2ah_outer['address'])
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         for _ in range(8):
             n0.sendtoaddress(p2ah_inner['address'], 0.5)
         for amount in (100, 150, 200, 250):
             n0.transfer(heavy_asset, amount, p2ah_inner['address'])
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         utxos = n0.listassetauthutxos(p2ah_inner['address'])
@@ -294,14 +385,14 @@ class AssetAuthStressTest(RavenTestFramework):
         verify = n0.verifyassetauth(n0.getrawtransaction(spend['txid']))
         assert_equal(verify['valid'], True)
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
         assert float(n1.listmyassets(heavy_asset)[heavy_asset]) >= 400.0
 
         dest2 = n1.getnewaddress()
         spend2 = n0.spendassetauth(p2ah_inner['address'], {dest2: 0.4})
         assert len(spend2['owner_assets_moved']) >= 3
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
     def stress_concurrent_same_dest_same_block(self):
@@ -318,11 +409,11 @@ class AssetAuthStressTest(RavenTestFramework):
         for _, owners in setups:
             for owner in owners:
                 n0.issue(owner.replace("!", ""), 100)
-            n0.generate(1)
+            self.mine(n0, 1)
             self.sync_all()
             p2ah = n0.addassetauthaddress(1, owners)
             n0.sendtoaddress(p2ah['address'], 2.0)
-            n0.generate(1)
+            self.mine(n0, 1)
             self.sync_all()
             p2ah_addrs.append(p2ah['address'])
 
@@ -334,7 +425,7 @@ class AssetAuthStressTest(RavenTestFramework):
             verify = n0.verifyassetauth(n0.getrawtransaction(txid))
             assert_equal(verify['valid'], True)
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
         assert float(n1.getreceivedbyaddress(shared_dest)) >= 3.0
 
@@ -344,7 +435,7 @@ class AssetAuthStressTest(RavenTestFramework):
         owners = [self.unique_tag("SA") + "!", self.unique_tag("SB") + "!", self.unique_tag("SC") + "!"]
         for owner in owners:
             n0.issue(owner.replace("!", ""), 100)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
         for owner in owners:
             assert owner in n0.listmyassets()
@@ -353,7 +444,7 @@ class AssetAuthStressTest(RavenTestFramework):
         shared_dest = n1.getnewaddress()
         for _ in range(4):
             n0.sendtoaddress(p2ah['address'], 1.0)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         spend1 = n0.spendassetauth(p2ah['address'], {shared_dest: 0.9})
@@ -365,7 +456,7 @@ class AssetAuthStressTest(RavenTestFramework):
             self.log.info("Second mempool spend from same 1-of-3 P2AH rejected: %s" % e)
             spend2 = None
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
         received = float(n1.getreceivedbyaddress(shared_dest))
         assert received >= 0.9
@@ -387,14 +478,14 @@ class AssetAuthStressTest(RavenTestFramework):
         owners = [self.unique_tag("SQ") + "!", self.unique_tag("SR") + "!", self.unique_tag("SS") + "!"]
         for owner in owners:
             n0.issue(owner.replace("!", ""), 100)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         p2ah = n0.addassetauthaddress(1, owners)
         shared_dest = n1.getnewaddress()
         for _ in range(4):
             n0.sendtoaddress(p2ah['address'], 1.0)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         total = 0.0
@@ -402,7 +493,7 @@ class AssetAuthStressTest(RavenTestFramework):
         for amount in (0.9, 0.9, 0.8, 0.8):
             spend = n0.spendassetauth(p2ah['address'], {shared_dest: amount})
             spend_count += 1
-            n0.generate(1)
+            self.mine(n0, 1)
             self.sync_all()
             total = float(n1.getreceivedbyaddress(shared_dest))
 
@@ -419,7 +510,7 @@ class AssetAuthStressTest(RavenTestFramework):
             n0.issue(owner.replace("!", ""), 100)
         n0.issue(asset_x, 5000)
         n0.issue(asset_y, 5000)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         p2ah = n0.addassetauthaddress(1, owners)
@@ -427,7 +518,7 @@ class AssetAuthStressTest(RavenTestFramework):
         n0.transfer(asset_x, 300, p2ah['address'])
         n0.transfer(asset_y, 400, p2ah['address'])
         n0.sendtoaddress(p2ah['address'], 1.0)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         spend_x = None
@@ -450,20 +541,20 @@ class AssetAuthStressTest(RavenTestFramework):
             spend_x = n0.spendassetauth(
                 p2ah['address'], {shared_dest: {'transfer': {asset_x: 100}}},
             )
-            n0.generate(1)
+            self.mine(n0, 1)
             self.sync_all()
             spend_y = n0.spendassetauth(
                 p2ah['address'], {shared_dest: {'transfer': {asset_y: 150}}},
             )
 
         if spend_y is None:
-            n0.generate(1)
+            self.mine(n0, 1)
             self.sync_all()
             spend_y = n0.spendassetauth(
                 p2ah['address'], {shared_dest: {'transfer': {asset_y: 150}}},
             )
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
         bal = n1.listmyassets()
         assert spend_x is not None
@@ -485,7 +576,7 @@ class AssetAuthStressTest(RavenTestFramework):
 
         for name in (hub, va, vb, vc, wa, wb, wc):
             n0.issue(name.replace("!", ""), 100)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         p2ah_source = n0.addassetauthaddress(1, [hub])
@@ -493,7 +584,7 @@ class AssetAuthStressTest(RavenTestFramework):
         vault_b = n0.addassetauthaddress(2, [wa, wb, wc])
 
         n0.sendtoaddress(p2ah_source['address'], 5.0)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         spend = n0.spendassetauth(
@@ -504,7 +595,7 @@ class AssetAuthStressTest(RavenTestFramework):
         verify = n0.verifyassetauth(n0.getrawtransaction(spend['txid']))
         assert_equal(verify['valid'], True)
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         utxos_a = n0.listassetauthutxos(vault_a['address'])
@@ -525,7 +616,7 @@ class AssetAuthStressTest(RavenTestFramework):
         assert len(spend_a['owner_assets_moved']) == 2
         assert len(spend_b['owner_assets_moved']) == 2
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
         assert float(n1.getreceivedbyaddress(dest_a)) >= 1.5
         assert float(n1.getreceivedbyaddress(dest_b)) >= 2.0
@@ -539,7 +630,7 @@ class AssetAuthStressTest(RavenTestFramework):
 
         for name in (hub, va, vb, vc, wa, wb, wc):
             n0.issue(name.replace("!", ""), 100)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         p2ah_hub = n0.addassetauthaddress(1, [hub])
@@ -554,7 +645,7 @@ class AssetAuthStressTest(RavenTestFramework):
         n0.transfer(wa, 1, p2ah_hub['address'])
         n0.sendtoaddress(vault_a['address'], 3.0)
         n0.sendtoaddress(vault_b['address'], 3.0)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         dest_a = n1.getnewaddress()
@@ -570,7 +661,7 @@ class AssetAuthStressTest(RavenTestFramework):
             spend_b = None
 
         if spend_b is None:
-            n0.generate(1)
+            self.mine(n0, 1)
             self.sync_all()
             spend_b = n0.spendassetauth(vault_b['address'], {dest_b: 2.5})
 
@@ -578,7 +669,7 @@ class AssetAuthStressTest(RavenTestFramework):
         assert len(spend_b['owner_assets_moved']) >= 2
         assert hub in spend_a['owner_assets_moved']
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
         assert float(n1.getreceivedbyaddress(dest_a)) >= 2.5
         assert float(n1.getreceivedbyaddress(dest_b)) >= 2.5
@@ -622,7 +713,7 @@ class AssetAuthStressTest(RavenTestFramework):
         for name in (rec_a, rec_b, rec_c, cust_a, cust_b, cust_c, vault_a, vault_b, vault_c):
             n0.issue(name.replace("!", ""), 100)
         n0.issue(treasury, 50000)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         recovery_p2ah = n0.addassetauthaddress(2, [rec_a, rec_b, rec_c])
@@ -635,7 +726,7 @@ class AssetAuthStressTest(RavenTestFramework):
         n0.transfer(treasury, 40000, vault_p2ah['address'])
         n0.transfer(admin, 1, vault_p2ah['address'])
         n0.sendtoaddress(vault_p2ah['address'], 2.0)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         # User-held keys the authority did NOT obtain — only subpoenaed recovery pair remains usable.
@@ -643,7 +734,7 @@ class AssetAuthStressTest(RavenTestFramework):
         n0.transfer(rec_c, 1, user_sink)
         n0.transfer(cust_c, 1, user_sink)
         n0.transfer(vault_c, 1, user_sink)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         seizure_asset_dest = n1.getnewaddress()
@@ -663,7 +754,7 @@ class AssetAuthStressTest(RavenTestFramework):
         assert len([k for k in (cust_a, cust_b) if k in moved]) >= 1
         assert len([k for k in (vault_a, vault_b) if k in moved]) >= 1
 
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
         assert float(n1.listmyassets(treasury)[treasury]) >= 25000.0
 
@@ -681,7 +772,7 @@ class AssetAuthStressTest(RavenTestFramework):
             {seizure_asset_dest2: {'transfer': {treasury: 10000}}},
         )
         assert len(seize2['owner_assets_moved']) >= 4
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
         total_seized = float(n1.listmyassets(treasury)[treasury])
         assert total_seized >= 35000.0
@@ -693,7 +784,7 @@ class AssetAuthStressTest(RavenTestFramework):
             {final_escrow: {'transfer': {admin: 1}}},
         )
         assert len([k for k in (rec_a, rec_b) if k in admin_spend['owner_assets_moved']]) == 2
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         assert float(n1.listmyassets().get(admin, 0)) >= 1.0
@@ -706,12 +797,12 @@ class AssetAuthStressTest(RavenTestFramework):
         n0 = self.nodes[0]
         tag = self.unique_tag("REJ")
         n0.issue(tag, 100)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         p2ah = n0.createassetauthaddress(1, [tag + "!"])
         n0.sendtoaddress(p2ah['address'], 2)
-        n0.generate(1)
+        self.mine(n0, 1)
         self.sync_all()
 
         utxos = n0.listassetauthutxos(p2ah['address'])
@@ -730,10 +821,10 @@ class AssetAuthStressTest(RavenTestFramework):
     def run_test(self):
         self.stress_rounds = max(1, int(getattr(self.options, 'stress_rounds', 5)))
 
-        self.activate()
         if self.persistent_dir:
             self._save_run_counter(self.run_id + 1)
-        self.recover_persistent_state()
+        self.activate()
+        self.ensure_persistent_funds()
 
         start_height = self.nodes[0].getblockcount()
         self.tag_epoch = (start_height << 4) | (self.run_id & 0xF)
@@ -759,6 +850,7 @@ class AssetAuthStressTest(RavenTestFramework):
 
         for i in range(self.stress_rounds):
             for name, fn in scenarios:
+                self.ensure_persistent_funds()
                 self.log.info("=== round %d/%d: %s ===" % (i + 1, self.stress_rounds, name))
                 fn()
 
@@ -767,6 +859,8 @@ class AssetAuthStressTest(RavenTestFramework):
             start_height, end_height, end_height - start_height, self.run_id))
 
         if self.persistent_dir:
+            self._mine_blocks(self.nodes[0], 1)
+            end_height = self.nodes[0].getblockcount()
             self._save_chain_height(end_height)
 
 
