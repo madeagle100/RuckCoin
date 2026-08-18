@@ -53,6 +53,7 @@ class AssetAuthStressTest(RavenTestFramework):
         self.run_id = 0
         self.tag_epoch = 0
         self.scenario_counter = 0
+        self._persistent_fund_address = None
 
     def add_options(self, parser):
         parser.add_option("--stress-rounds", dest="stress_rounds", default=5, type="int",
@@ -170,41 +171,86 @@ class AssetAuthStressTest(RavenTestFramework):
             self.reconcile_mempools()
         sync_mempools(self.nodes)
 
+    def _fund_address(self):
+        if self._persistent_fund_address is None:
+            self._persistent_fund_address = self.nodes[0].getnewaddress()
+        return self._persistent_fund_address
+
+    def _regtest_block_subsidy(self, height):
+        """Regtest subsidy (5000 RVN initial, halving every 150 blocks)."""
+        halvings = height // 150
+        if halvings >= 64:
+            return 0.0
+        return 5000.0 / (2 ** halvings)
+
+    def _clear_stale_mempool_files(self):
+        for i in range(self.num_nodes):
+            for path in self._mempool_dat_paths(i):
+                if os.path.isfile(path):
+                    os.remove(path)
+
+    def _reset_persistent_chain(self):
+        """Wipe node datadirs when regtest subsidy can no longer fund issue burns."""
+        height = self.nodes[0].getblockcount()
+        subsidy = self._regtest_block_subsidy(height + 1)
+        self.log.warning(
+            "Resetting persistent chain (height %d, next block subsidy %.4f RVN)" % (height, subsidy))
+        self.stop_nodes()
+        for i in range(self.num_nodes):
+            node_dir = os.path.join(self.persistent_dir, "node%d" % i)
+            if os.path.isdir(node_dir):
+                shutil.rmtree(node_dir)
+        self._persistent_fund_address = None
+        for i in range(self.num_nodes):
+            initialize_data_dir(self.persistent_dir, i)
+        self._clear_stale_mempool_files()
+        self.start_nodes()
+        for i in range(self.num_nodes - 1):
+            connect_nodes_bi(self.nodes, i, i + 1)
+        sync_blocks(self.nodes)
+        sync_mempools(self.nodes)
+        self.mine(self.nodes[0], 101)
+
     def ensure_persistent_funds(self):
         """Keep node0 funded for 500 RVN asset-issue burns on a long-lived chain."""
         if not self.persistent_dir:
             return
-        n0, n1 = self.nodes[0], self.nodes[1]
+        n0 = self.nodes[0]
         min_balance = 550
         balance = n0.getbalance()
         if balance >= min_balance:
             return
-        needed = min_balance - balance
-        n1_bal = n1.getbalance()
-        self.log.info("Node0 balance low (%.8f); need %.8f RVN (node1 has %.8f)" % (balance, needed, n1_bal))
-        if n1_bal > 1:
-            send_amount = min(needed, n1_bal - 1)
-            n1.sendtoaddress(n0.getnewaddress(), send_amount)
-            self.mine(n1, 1)
-            sync_blocks(self.nodes)
+        if self._regtest_block_subsidy(n0.getblockcount() + 1) < min_balance:
+            self._reset_persistent_chain()
             if n0.getbalance() >= min_balance:
                 return
-        for attempt in range(12):
+        self.log.info("Node0 balance low (%.8f); mining coinbase (every 10th to %s)" % (
+            balance, self._fund_address()))
+        for attempt in range(3):
             if n0.getbalance() >= min_balance:
                 return
-            self.log.info("Mining coinbase maturity batch %d for node0 funds" % (attempt + 1))
+            if self._regtest_block_subsidy(n0.getblockcount() + 1) < min_balance:
+                self._reset_persistent_chain()
+                continue
+            self.log.info("Funding batch %d (height %d)" % (attempt + 1, n0.getblockcount()))
             self._mine_blocks(n0, 101)
         if n0.getbalance() < min_balance:
-            raise AssertionError("Node0 balance still %.8f after coinbase maturity mining" % n0.getbalance())
+            self._reset_persistent_chain()
+        if n0.getbalance() < min_balance:
+            raise AssertionError("Node0 balance still %.8f after persistent chain reset" % n0.getbalance())
 
     def mine(self, node, count=1):
         self._mine_blocks(node, count)
 
     def _mine_blocks(self, node, count):
-        for _ in range(count):
+        fund_addr = self._fund_address() if self.persistent_dir and node is self.nodes[0] else None
+        for i in range(count):
             tip_time = max(node.getblockchaininfo()['mediantime'], int(time.time()))
             set_node_times(self.nodes, tip_time + 1)
-            node.generate(1)
+            if fund_addr and (i + 1) % 10 == 0:
+                node.generatetoaddress(1, fund_addr)
+            else:
+                node.generate(1)
         sync_blocks(self.nodes)
 
     def activate(self):
