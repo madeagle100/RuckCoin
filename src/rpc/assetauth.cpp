@@ -189,6 +189,9 @@ UniValue getassetauthinfo(const JSONRPCRequest& request)
     // Case 1: hex preimage
     if (IsHex(param)) {
         std::vector<unsigned char> vchPreimage = ParseHex(param);
+        std::string strFramingError;
+        if (!AssetAuthPreimageFramingValid(vchPreimage, strFramingError))
+            throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Failed to decode hex as a P2AH preimage: %s", strFramingError));
         CDataStream ssPreimage(vchPreimage, SER_NETWORK, PROTOCOL_VERSION);
         CAssetAuthPreimage preimage;
         try {
@@ -224,16 +227,14 @@ UniValue getassetauthinfo(const JSONRPCRequest& request)
     if (pwallet) {
         std::vector<unsigned char> vchPreimage;
         if (pwallet->GetAssetAuthPreimage(*assetAuthID, vchPreimage)) {
-            CDataStream ssPreimage(vchPreimage, SER_NETWORK, PROTOCOL_VERSION);
             CAssetAuthPreimage preimage;
-            try {
-                ssPreimage >> preimage;
+            std::string strStrictError;
+            if (AssetAuthPreimageStrictFromRaw(vchPreimage, preimage, strStrictError)) {
                 UniValue full = PreimageToUniValue(preimage);
                 full.push_back(Pair("known", true));
                 return full;
-            } catch (const std::exception&) {
-                // fall through to unknown
             }
+            // fall through to unknown on strict-validation failure
         }
     }
 #endif
@@ -251,6 +252,10 @@ UniValue verifyassetauth(const JSONRPCRequest& request)
             "\nVerifies the P2AH (pay-to-asset-hash) authorization of a raw transaction.\n"
             "\nFor each P2AH input, reports whether the revealed preimage matches the committed hash and\n"
             "whether enough of the committed owner assets move through the transaction to authorize the spend.\n"
+            "\nThis checks the authorization graph only. It does not verify signatures, fees or value\n"
+            "conservation, and a \"valid\" result does not mean the transaction would be accepted into the\n"
+            "mempool. Inputs provided through prevtxs override the chain and mempool view for those\n"
+            "prevouts, so the result is only as accurate as the supplied context.\n"
             "\nThe transaction's inputs are looked up in the UTXO set and mempool. Inputs that are not found\n"
             "there can be provided through the prevtxs parameter.\n"
 
@@ -597,11 +602,37 @@ struct AuthP2AHInput {
     std::string assetReturned; // owner asset held at this P2AH that must move back
 };
 
-/** Find a watched P2AH UTXO holding the given owner asset (wallet must know the preimage) */
-static bool FindOwnerAssetAtP2AH(CWallet* pwallet, const std::string& ownerName,
-    const std::set<COutPoint>& usedOutpoints, COutPoint& outpointOut, CAssetAuthPreimage& preimageOut,
-    CTxDestination& p2ahDestOut)
+/** Maximum chained-P2AH resolution depth and total candidate attempts.
+ *  Both bounds only guard pathological wallet states; realistic chains are tiny. */
+static const unsigned int MAX_ASSET_AUTH_RESOLVE_DEPTH = 256;
+static const unsigned long MAX_ASSET_AUTH_RESOLVE_STEPS = 8192;
+
+/** Internal state for the bounded-backtracking resolver */
+struct ResolveCtx {
+    CWallet* pwallet;
+    const std::map<std::string, std::vector<COutput> >& mapAssetCoins;
+    std::set<COutPoint> usedP2AH;
+    std::set<std::pair<uint256, unsigned int> > usedKey;
+    // Names already secured by selected key inputs. Consensus counts names in
+    // its authorizer set, so one moved owner token satisfies EVERY pending that
+    // names it; the resolver models that with this name-level set instead of
+    // blocking on per-outpoint consumption.
+    std::set<std::string> availableRootNames;
+    unsigned long steps;
+};
+
+/** One candidate P2AH holding of an owner asset */
+struct P2AHOwnerCandidate {
+    COutPoint outpoint;
+    CAssetAuthPreimage preimage;   // preimage required to spend that holding
+    CTxDestination p2ahDest;
+};
+
+/** Enumerate every unused watched-P2AH holding of `name` (wallet must know each preimage) */
+static std::vector<P2AHOwnerCandidate> CollectP2AHOwnerCandidates(CWallet* pwallet, const std::string& ownerName,
+    const std::set<COutPoint>& usedOutpoints)
 {
+    std::vector<P2AHOwnerCandidate> out;
     for (const auto& entry : pwallet->mapWallet) {
         const CWalletTx& wtx = entry.second;
         if (wtx.IsCoinBase() && wtx.GetBlocksToMaturity() > 0)
@@ -636,23 +667,103 @@ static bool FindOwnerAssetAtP2AH(CWallet* pwallet, const std::string& ownerName,
                 continue;
 
             CAssetAuthPreimage candidate;
-            CDataStream ssPreimage(vchPreimage, SER_NETWORK, PROTOCOL_VERSION);
-            try {
-                ssPreimage >> candidate;
-            } catch (const std::exception&) {
-                continue;
-            }
-            std::string strPreimageError;
-            if (!candidate.IsValid(strPreimageError))
+            std::string strStrictError;
+            if (!AssetAuthPreimageStrictFromRaw(vchPreimage, candidate, strStrictError))
                 continue;
 
             COutPoint outpoint(entry.first, i);
             if (usedOutpoints.count(outpoint))
                 continue;
 
-            outpointOut = outpoint;
-            preimageOut = candidate;
-            p2ahDestOut = outDest;
+            out.push_back(P2AHOwnerCandidate{outpoint, candidate, outDest});
+        }
+    }
+    return out;
+}
+
+// Forward declaration
+static bool ResolveRequirements(ResolveCtx& ctx, const std::vector<std::string>& vNames,
+    uint8_t nRequired, std::vector<AuthKeyInput>& keyInputs,
+    std::vector<AuthP2AHInput>& p2ahInputs, unsigned int nDepth);
+
+/**
+ * Satisfy a single owner-asset name. All-or-nothing: on failure the resolver
+ * state is left exactly as it was, so the caller can safely skip to the next
+ * name (any-m-of-n semantics).
+ *
+ * Candidate order preserves the author's design preference: chained P2AH
+ * holdings first, key-held roots second. Every alternative is attempted with
+ * rollback until one commits or the list is exhausted.
+ */
+static bool TrySatisfyName(ResolveCtx& ctx, const std::string& ownerName,
+    std::vector<AuthKeyInput>& keyInputs, std::vector<AuthP2AHInput>& p2ahInputs,
+    unsigned int nDepth)
+{
+    if (++ctx.steps > MAX_ASSET_AUTH_RESOLVE_STEPS)
+        return false;
+
+    // A root already secured by another selection satisfies this name without
+    // consuming anything new (consensus set semantics).
+    if (ctx.availableRootNames.count(ownerName))
+        return true;
+
+    // ---- Chained P2AH candidates (author's preferred path) ----
+    for (const P2AHOwnerCandidate& cand : CollectP2AHOwnerCandidates(ctx.pwallet, ownerName, ctx.usedP2AH)) {
+        if (++ctx.steps > MAX_ASSET_AUTH_RESOLVE_STEPS)
+            return false;
+
+        // snapshot for rollback
+        std::set<COutPoint> snapUsedP2AH = ctx.usedP2AH;
+        std::set<std::pair<uint256, unsigned int> > snapUsedKey = ctx.usedKey;
+        std::set<std::string> snapRoots = ctx.availableRootNames;
+        size_t snapKeySize = keyInputs.size();
+        size_t snapP2AHSize = p2ahInputs.size();
+
+        ctx.usedP2AH.insert(cand.outpoint);
+
+        std::vector<AuthKeyInput> subKeys;
+        std::vector<AuthP2AHInput> subP2ah;
+        if (ResolveRequirements(ctx, cand.preimage.vOwnerAssetNames, cand.preimage.nRequired,
+                                subKeys, subP2ah, nDepth + 1)) {
+            keyInputs.insert(keyInputs.end(), subKeys.begin(), subKeys.end());
+            p2ahInputs.insert(p2ahInputs.end(), subP2ah.begin(), subP2ah.end());
+            AuthP2AHInput link;
+            link.outpoint = cand.outpoint;
+            link.preimage = cand.preimage;
+            link.p2ahDest = cand.p2ahDest;
+            link.assetReturned = ownerName;
+            p2ahInputs.push_back(link);
+            // The moved token joins the authorizer set for every other
+            // requirement, mirroring the consensus fixpoint.
+            ctx.availableRootNames.insert(ownerName);
+            return true;
+        }
+
+        // rollback and try the next candidate
+        ctx.usedP2AH = snapUsedP2AH;
+        ctx.usedKey = snapUsedKey;
+        ctx.availableRootNames = snapRoots;
+        keyInputs.erase(keyInputs.begin() + static_cast<long>(snapKeySize), keyInputs.end());
+        p2ahInputs.erase(p2ahInputs.begin() + static_cast<long>(snapP2AHSize), p2ahInputs.end());
+    }
+
+    // ---- Key-held roots ----
+    auto it = ctx.mapAssetCoins.find(ownerName);
+    if (it != ctx.mapAssetCoins.end()) {
+        for (const COutput& out : it->second) {
+            if (++ctx.steps > MAX_ASSET_AUTH_RESOLVE_STEPS)
+                return false;
+            // Tokens held at P2AH outputs are handled by the chained branch.
+            if (out.tx->tx->vout[out.i].scriptPubKey.IsAssetAuthScript())
+                continue;
+            // Only signature-spendable coins can serve as roots.
+            if (!out.fSpendable)
+                continue;
+            auto id = std::make_pair(out.tx->GetHash(), out.i);
+            if (!ctx.usedKey.insert(id).second)
+                continue;
+            keyInputs.push_back({ownerName, out});
+            ctx.availableRootNames.insert(ownerName);
             return true;
         }
     }
@@ -660,9 +771,35 @@ static bool FindOwnerAssetAtP2AH(CWallet* pwallet, const std::string& ownerName,
 }
 
 /**
+ * Any-m-of-n requirement solver: tries every name independently and succeeds
+ * when at least `nRequired` of them are satisfiable, matching the consensus
+ * fixpoint (which counts satisfied names, not a prefix).
+ */
+static bool ResolveRequirements(ResolveCtx& ctx, const std::vector<std::string>& vNames,
+    uint8_t nRequired, std::vector<AuthKeyInput>& keyInputs,
+    std::vector<AuthP2AHInput>& p2ahInputs, unsigned int nDepth)
+{
+    if (nDepth > MAX_ASSET_AUTH_RESOLVE_DEPTH)
+        return false;
+
+    uint8_t nFound = 0;
+    for (const std::string& ownerName : vNames) {
+        if (nFound >= nRequired)
+            break;
+        if (TrySatisfyName(ctx, ownerName, keyInputs, p2ahInputs, nDepth))
+            nFound++;
+        // A failed name leaves the state untouched; simply continue with the
+        // next name (this is what makes any-m-of-n complete).
+    }
+    return nFound >= nRequired;
+}
+
+/**
  * Select inputs that satisfy a P2AH preimage's authorization requirement.
- * Owner tokens on a parent P2AH are preferred (chained auth); those tokens are
- * returned to that parent P2AH in outputs. Key-held roots move to fresh addresses.
+ * Bounded backtracking over chained P2AH holdings and key-held roots with
+ * consensus-parity any-m-of-n counting, shared-root reuse, and full rollback.
+ * On success the consumed sets are exported via usedP2AH/usedKey so callers can
+ * exclude these outpoints from target selection.
  */
 static bool ResolveAssetAuth(CWallet* pwallet,
     const std::map<std::string, std::vector<COutput> >& mapAssetCoins,
@@ -670,53 +807,19 @@ static bool ResolveAssetAuth(CWallet* pwallet,
     std::vector<AuthP2AHInput>& p2ahInputs, std::set<COutPoint>& usedP2AH,
     std::set<std::pair<uint256, unsigned int> >& usedKey)
 {
-    int nFound = 0;
-    for (const std::string& ownerName : preimage.vOwnerAssetNames) {
-        if (nFound >= preimage.nRequired)
-            break;
+    ResolveCtx ctx{pwallet, mapAssetCoins, {}, {}, {}, 0};
 
-        bool satisfied = false;
-
-        COutPoint p2ahOutpoint;
-        CAssetAuthPreimage parentPreimage;
-        CTxDestination parentDest;
-        if (FindOwnerAssetAtP2AH(pwallet, ownerName, usedP2AH, p2ahOutpoint, parentPreimage, parentDest)) {
-            std::vector<AuthKeyInput> subKeys;
-            std::vector<AuthP2AHInput> subP2ah;
-            if (ResolveAssetAuth(pwallet, mapAssetCoins, parentPreimage, subKeys, subP2ah, usedP2AH, usedKey)) {
-                keyInputs.insert(keyInputs.end(), subKeys.begin(), subKeys.end());
-                p2ahInputs.insert(p2ahInputs.end(), subP2ah.begin(), subP2ah.end());
-                AuthP2AHInput link;
-                link.outpoint = p2ahOutpoint;
-                link.preimage = parentPreimage;
-                link.p2ahDest = parentDest;
-                link.assetReturned = ownerName;
-                if (usedP2AH.insert(p2ahOutpoint).second)
-                    p2ahInputs.push_back(link);
-                nFound++;
-                satisfied = true;
-            }
-        }
-
-        if (!satisfied) {
-            auto it = mapAssetCoins.find(ownerName);
-            if (it != mapAssetCoins.end()) {
-                for (const COutput& out : it->second) {
-                    auto id = std::make_pair(out.tx->GetHash(), out.i);
-                    if (!usedKey.insert(id).second)
-                        continue;
-                    keyInputs.push_back({ownerName, out});
-                    nFound++;
-                    satisfied = true;
-                    break;
-                }
-            }
-        }
-
-        if (!satisfied)
-            return false;
+    if (!ResolveRequirements(ctx, preimage.vOwnerAssetNames, preimage.nRequired,
+                             keyInputs, p2ahInputs, 0)) {
+        // Roll back everything so a failed resolution has no side effects.
+        keyInputs.clear();
+        p2ahInputs.clear();
+        return false;
     }
-    return nFound >= preimage.nRequired;
+
+    usedP2AH = ctx.usedP2AH;
+    usedKey = ctx.usedKey;
+    return true;
 }
 
 #endif // ENABLE_WALLET
@@ -728,7 +831,7 @@ UniValue spendassetauth(const JSONRPCRequest& request)
         return NullUniValue;
     }
 
-    if (request.fHelp || !AreAssetAuthDeployed() || request.params.size() < 2 || request.params.size() > 4)
+    if (request.fHelp || request.params.size() < 2 || request.params.size() > 4)
         throw std::runtime_error(
             "spendassetauth \"from_address\" outputs ( \"preimage\" \"change_address\" )\n"
             + AssetAuthActivationWarning() +
@@ -747,7 +850,8 @@ UniValue spendassetauth(const JSONRPCRequest& request)
             "      \"address\": {\"transfer\":{\"NAME\":qty}}   (object) asset amount to send to the address\n"
             "      ,...\n"
             "    }\n"
-            "3. \"preimage\"         (string, optional) The hex preimage. Required if not stored in the wallet\n"
+            "3. \"preimage\"         (string, optional) The hex preimage. Required if not stored in the wallet.\n"
+            "                             A supplied preimage is stored in the wallet so future spends can use it\n"
             "4. \"change_address\"   (string, optional) Address for RVN/asset change. Defaults to the P2AH address itself\n"
 
             "\nResult:\n"
@@ -765,6 +869,9 @@ UniValue spendassetauth(const JSONRPCRequest& request)
         );
 
     ObserveSafeMode();
+    if (!AreAssetAuthDeployed())
+        throw JSONRPCError(RPC_INVALID_REQUEST,
+            "P2AH (pay-to-asset-hash) is not active on this network; spends of P2AH outputs are not permitted yet");
     LOCK2(cs_main, pwallet->cs_wallet);
     EnsureWalletIsUnlocked(pwallet);
 
@@ -786,21 +893,17 @@ UniValue spendassetauth(const JSONRPCRequest& request)
     }
 
     CAssetAuthPreimage preimage;
-    {
-        CDataStream ssPreimage(vchPreimage, SER_NETWORK, PROTOCOL_VERSION);
-        try {
-            ssPreimage >> preimage;
-        } catch (const std::exception&) {
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Failed to decode P2AH preimage");
-        }
+    std::string strStrictError;
+    if (!AssetAuthPreimageStrictFromRaw(vchPreimage, preimage, strStrictError))
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Failed to decode P2AH preimage: %s", strStrictError));
+
+    // Make sure the preimage is in the wallet keystore so ProduceSignature can
+    // find it when signing. Persist only when missing: the walletdb write uses
+    // DB_NOOVERWRITE, so rewriting an identical preimage would spuriously fail.
+    if (!pwallet->HaveAssetAuthPreimage(*assetAuthID)) {
+        if (!pwallet->AddAssetAuthPreimage(vchPreimage))
+            throw JSONRPCError(RPC_WALLET_ERROR, "Failed to persist the P2AH preimage to the wallet");
     }
-
-    std::string strPreimageError;
-    if (!preimage.IsValid(strPreimageError))
-        throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Invalid preimage: %s", strPreimageError));
-
-    // Make sure the preimage is in the wallet keystore so ProduceSignature can find it when signing
-    pwallet->AddAssetAuthPreimage(vchPreimage);
 
     // ---- Parse change address ----
     CTxDestination changeDest = fromDest; // default: change goes back to the P2AH address
@@ -895,6 +998,11 @@ UniValue spendassetauth(const JSONRPCRequest& request)
             if (!outID || *outID != *assetAuthID)
                 continue;
             if (pwallet->IsSpent(entry.first, i))
+                continue;
+            // Never double-select an outpoint already consumed as an
+            // authorization link; spending it twice would be invalid and
+            // counting it twice would corrupt the asset/RVN accounting.
+            if (usedP2AHAuth.count(COutPoint(entry.first, i)))
                 continue;
 
             P2AHUtxo utxo;

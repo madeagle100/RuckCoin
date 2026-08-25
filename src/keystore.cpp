@@ -6,6 +6,8 @@
 
 #include "keystore.h"
 
+#include <assets/assets.h>
+
 #include "key.h"
 #include "pubkey.h"
 #include "util.h"
@@ -69,6 +71,16 @@ bool CBasicKeyStore::AddAssetAuthPreimage(const std::vector<unsigned char>& vchP
 {
     if (vchPreimage.size() > MAX_SCRIPT_ELEMENT_SIZE)
         return error("CBasicKeyStore::AddAssetAuthPreimage(): preimages > %i bytes are invalid", MAX_SCRIPT_ELEMENT_SIZE);
+
+    // F-07: every ingress into the keystore — including the wallet DB load
+    // path — enforces the same strict framing/semantic/canonical contract as
+    // the consensus parser. Malformed or non-canonical records already present
+    // in a legacy wallet DB are therefore skipped at load time instead of
+    // being silently accepted.
+    CAssetAuthPreimage strictCheck;
+    std::string strStrictError;
+    if (!AssetAuthPreimageStrictFromRaw(vchPreimage, strictCheck, strStrictError))
+        return error("CBasicKeyStore::AddAssetAuthPreimage(): %s", strStrictError.c_str());
 
     LOCK(cs_KeyStore);
     mapAssetAuthPreimages[Hash160(vchPreimage)] = vchPreimage;

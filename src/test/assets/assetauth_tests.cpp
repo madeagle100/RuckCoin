@@ -15,6 +15,11 @@
 #include <consensus/validation.h>
 #include <consensus/tx_verify.h>
 #include <validation.h>
+#include <undo.h>
+#include <arith_uint256.h>
+#include <keystore.h>
+#include <chrono>
+#include <algorithm>
 
 BOOST_FIXTURE_TEST_SUITE(assetauth_tests, BasicTestingSetup)
 
@@ -562,6 +567,325 @@ BOOST_FIXTURE_TEST_SUITE(assetauth_tests, BasicTestingSetup)
 
         std::string strError;
         BOOST_CHECK_MESSAGE(CheckTxAssetAuthInputs(tx, coins, strError), strError);
+    }
+
+    // Helper: raw bytes replicating the wire serialization of a preimage,
+    // with controllable compactsize encodings for framing-fuzz cases
+    static std::vector<unsigned char> RawPreimageBytes(uint8_t nRequired, const std::vector<std::string>& vNames)
+    {
+        auto pushSize = [](std::vector<unsigned char>& out, uint64_t n) {
+            if (n < 253) {
+                out.push_back((unsigned char)n);
+            } else if (n <= 0xffffU) {
+                out.push_back(253);
+                out.push_back((unsigned char)(n & 0xff));
+                out.push_back((unsigned char)((n >> 8) & 0xff));
+            } else {
+                out.push_back(254);
+                for (int k = 0; k < 4; k++)
+                    out.push_back((unsigned char)((n >> (8 * k)) & 0xff));
+            }
+        };
+        std::vector<unsigned char> out;
+        out.push_back(nRequired);
+        pushSize(out, vNames.size());
+        for (const std::string& name : vNames) {
+            pushSize(out, name.size());
+            out.insert(out.end(), name.begin(), name.end());
+        }
+        return out;
+    }
+
+    BOOST_AUTO_TEST_CASE(preimage_framing_accepts_canonical_test)
+    {
+        std::string strError;
+        std::vector<unsigned char> raw = RawPreimageBytes(1, {"AAA!", "BBB!"});
+        BOOST_CHECK(AssetAuthPreimageFramingValid(raw, strError));
+
+        // A canonical serialized preimage must also pass
+        CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+        ss << MakePreimage(2, {"AAA!", "BBB!", "CCC!"});
+        std::vector<unsigned char> rawCanonical(ss.begin(), ss.end());
+        BOOST_CHECK(AssetAuthPreimageFramingValid(rawCanonical, strError));
+    }
+
+    BOOST_AUTO_TEST_CASE(preimage_framing_rejects_malformed_test)
+    {
+        std::string strError;
+
+        // empty
+        std::vector<unsigned char> empty;
+        BOOST_CHECK(!AssetAuthPreimageFramingValid(empty, strError));
+
+        // truncated inside a declared name
+        std::vector<unsigned char> truncated = RawPreimageBytes(1, {"AAA!", "BBB!"});
+        truncated.resize(truncated.size() - 3);
+        BOOST_CHECK(!AssetAuthPreimageFramingValid(truncated, strError));
+
+        // missing count entirely
+        std::vector<unsigned char> noCount;
+        noCount.push_back(1);
+        BOOST_CHECK(!AssetAuthPreimageFramingValid(noCount, strError));
+
+        // hostile count prefix: declares far more names than the payload can hold
+        std::vector<unsigned char> hugeCount;
+        hugeCount.push_back(1);
+        hugeCount.push_back(254);
+        hugeCount.insert(hugeCount.end(), {0xff, 0x00, 0x00, 0x00}); // 255 names, no data follows
+        BOOST_CHECK(!AssetAuthPreimageFramingValid(hugeCount, strError));
+
+        // hostile name length: declares more bytes than remain
+        std::vector<unsigned char> hugeLen = RawPreimageBytes(1, {"AAA!"});
+        // overwrite the name length byte with a large 254-prefixed value
+        size_t lenPos = 2; // threshold + count(=1 byte)
+        hugeLen[lenPos] = 254;
+        const unsigned char bigLen[4] = {0x00, 0x00, 0x10, 0x00}; // 1MB > remaining
+        hugeLen.insert(hugeLen.begin() + lenPos + 1, bigLen, bigLen + 4);
+        BOOST_CHECK(!AssetAuthPreimageFramingValid(hugeLen, strError));
+        BOOST_CHECK(strError.find("declared name length exceeds payload") != std::string::npos);
+
+        // trailing data after an otherwise canonical payload
+        std::vector<unsigned char> trailing = RawPreimageBytes(1, {"AAA!"});
+        trailing.push_back(0x00);
+        BOOST_CHECK(!AssetAuthPreimageFramingValid(trailing, strError));
+
+        // oversize overall payload (> MAX_SCRIPT_ELEMENT_SIZE)
+        std::vector<unsigned char> oversized(600, 'a');
+        BOOST_CHECK(!AssetAuthPreimageFramingValid(oversized, strError));
+    }
+
+    BOOST_AUTO_TEST_CASE(preimage_decoder_rejects_malformed_scriptsig_test)
+    {
+        CAssetAuthPreimage preimage;
+
+        // Canonical preimage in a single push decodes
+        BOOST_CHECK(AssetAuthPreimageFromScriptSig(MakeP2AHScriptSig(MakePreimage(1, {"AAA!"})), preimage));
+        BOOST_CHECK_EQUAL(preimage.nRequired, 1);
+        BOOST_CHECK_EQUAL(preimage.vOwnerAssetNames.size(), 1u);
+
+        // Truncated nested framing is rejected by the decoder before allocation
+        std::vector<unsigned char> badRaw = RawPreimageBytes(1, {"AAAAA!"});
+        badRaw.resize(badRaw.size() - 4);
+        CScript badScriptSig;
+        badScriptSig << badRaw;
+        BOOST_CHECK(!AssetAuthPreimageFromScriptSig(badScriptSig, preimage));
+
+        // Oversized single push (> MAX_SCRIPT_ELEMENT_SIZE) is rejected
+        std::vector<unsigned char> bigPush(600, 'b');
+        CScript bigScriptSig;
+        bigScriptSig << bigPush;
+        BOOST_CHECK(!AssetAuthPreimageFromScriptSig(bigScriptSig, preimage));
+
+        // Two pushes are rejected (must be exactly one push)
+        CScript twoPush;
+        twoPush << std::vector<unsigned char>{0x01} << std::vector<unsigned char>{0x02};
+        BOOST_CHECK(!AssetAuthPreimageFromScriptSig(twoPush, preimage));
+    }
+
+    BOOST_AUTO_TEST_CASE(checktxassets_activation_context_test)
+    {
+        // F-01 regression: a spend of a P2AH-shaped output is legacy-script
+        // semantics before activation (must be ACCEPTED like an old node) and
+        // authorization-enforced once the deployment is active for the
+        // validation context.
+        SelectParams(CBaseChainParams::MAIN);
+
+        CAssetAuthPreimage pre = MakePreimage(1, {"UNIT!"});
+        CScript p2ahScript;
+        pre.ConstructTransaction(p2ahScript);
+
+        CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+        ss << pre;
+        std::vector<unsigned char> raw(ss.begin(), ss.end());
+
+        CCoinsView baseView;
+        CCoinsViewCache coins(&baseView);
+        CTxOut txOut(1 * COIN, p2ahScript);
+        COutPoint outpoint(uint256S("BB21CB9A63BE0019171456252989A459A7D0A5F494735278290079D22AB704A"), 0);
+        coins.AddCoin(outpoint, Coin(txOut, 100, 0), true);
+
+        CMutableTransaction mutTx;
+        CTxIn in;
+        in.prevout = outpoint;
+        CScript sig;
+        sig << raw;
+        in.scriptSig = sig;
+        mutTx.vin.push_back(in);
+        mutTx.vout.emplace_back(CTxOut(1 * COIN - 5000,
+            GetScriptForDestination(DecodeDestination(GetParams().GlobalBurnAddress()))));
+
+        CTransaction tx(mutTx);
+        CValidationState state;
+        std::vector<std::pair<std::string, uint256>> reissue;
+
+        // Legacy (pre-activation) context: old nodes accept this hashlock spend.
+        BOOST_CHECK_MESSAGE(Consensus::CheckTxAssets(tx, state, coins, nullptr, false, reissue, true,
+                                nullptr, 0, nullptr, /*fAssetAuthDeployed=*/false),
+                            "pre-activation legacy-semantics spend must be accepted (F-01)");
+
+        // Deployed context with no owner movement: authorization must fail.
+        CValidationState state2;
+        BOOST_CHECK_MESSAGE(!Consensus::CheckTxAssets(tx, state2, coins, nullptr, false, reissue, true,
+                                nullptr, 0, nullptr, /*fAssetAuthDeployed=*/true),
+                            "deployed context must enforce owner movement");
+    }
+
+    BOOST_AUTO_TEST_CASE(preimage_strict_decoder_canonical_test)
+    {
+        auto sz = [](std::vector<unsigned char>& v, uint64_t n) {
+            if (n < 253) { v.push_back((unsigned char)n); }
+            else if (n <= 0xffff) { v.push_back(253); v.push_back(n & 0xff); v.push_back((n >> 8) & 0xff); }
+            else { v.push_back(254); for (int k = 0; k < 4; k++) v.push_back((n >> (8 * k)) & 0xff); }
+        };
+        // Canonical payload accepted
+        CAssetAuthPreimage canon = MakePreimage(1, {"AAAA!"});
+        CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+        ss << canon;
+        std::vector<unsigned char> rawCanon(ss.begin(), ss.end());
+        CAssetAuthPreimage out;
+        std::string err;
+        BOOST_CHECK(AssetAuthPreimageStrictFromRaw(rawCanon, out, err));
+
+        // Trailing byte: decodable but not canonical -> rejected
+        std::vector<unsigned char> trailing(rawCanon);
+        trailing.push_back(0x00);
+        BOOST_CHECK(!AssetAuthPreimageStrictFromRaw(trailing, out, err));
+
+        // Non-canonical CompactSize count (253-prefixed small value) -> rejected
+        std::vector<unsigned char> nc;
+        nc.push_back(1);
+        nc.push_back(253); nc.push_back(0x01); nc.push_back(0x00);
+        sz(nc, 5);
+        const unsigned char* nm = (const unsigned char*)"AAAA!";
+        nc.insert(nc.end(), nm, nm + 5);
+        BOOST_CHECK(!AssetAuthPreimageStrictFromRaw(nc, out, err));
+        BOOST_CHECK(err.find("canonical") != std::string::npos);
+    }
+
+    BOOST_AUTO_TEST_CASE(undo_input_bound_era_independent_test)
+    {
+        // R-01 regression: the parse-time undo input ceiling must stay at the
+        // RIP2 bound regardless of process-local deployment state. A record
+        // sized just above the old pre-RIP2 limit must deserialize cleanly.
+        const size_t nOldLimit =
+            (size_t)(MAX_BLOCK_WEIGHT / MIN_TRANSACTION_INPUT_WEIGHT);
+        const size_t nCount = nOldLimit + 1;
+
+        CTxUndo undo;
+        undo.vprevout.resize(nCount); // default (spent) coins serialize tiny
+
+        CDataStream ss(SER_DISK, CLIENT_VERSION);
+        ss << undo;
+
+        CTxUndo decoded;
+        try {
+            ss << undo; // keep stream reusable
+        } catch (...) {}
+        CDataStream ss2(SER_DISK, CLIENT_VERSION);
+        ss2 << undo;
+        BOOST_CHECK_NO_THROW(ss2 >> decoded);
+        BOOST_CHECK_EQUAL(decoded.vprevout.size(), nCount);
+    }
+
+    BOOST_AUTO_TEST_CASE(keystore_strict_preimage_contract_test)
+    {
+        // F-07 regression: the keystore enforces the same strict contract as
+        // consensus, which also covers the wallet DB load path.
+        CBasicKeyStore ks;
+        CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+        ss << MakePreimage(1, {"AAAA!"});
+        std::vector<unsigned char> canon(ss.begin(), ss.end());
+
+        uint160 id = Hash160(canon);
+        BOOST_CHECK(ks.AddAssetAuthPreimage(canon));
+        std::vector<unsigned char> got;
+        BOOST_CHECK(ks.GetAssetAuthPreimage(id, got));
+        BOOST_CHECK(got == canon);
+
+        // Trailing byte: decodable but non-canonical -> rejected at ingress
+        std::vector<unsigned char> bad(canon);
+        bad.push_back(0x00);
+        BOOST_CHECK(!ks.AddAssetAuthPreimage(bad));
+    }
+
+    BOOST_AUTO_TEST_CASE(authorization_worklist_scaling_test)
+    {
+        // F-04: deep reverse-order dependency chains authorize via the
+        // name->pending reverse index. Correctness at several depths plus a
+        // loose wall-clock scaling sanity check (warn-only to avoid flaky CI).
+        SelectParams(CBaseChainParams::MAIN);
+
+        auto padName = [](size_t i) {
+            std::string n = "WLIST";
+            std::string num = std::to_string(i);
+            while (num.size() < 6) num.insert(num.begin(), '0');
+            return n + num + "!";
+        };
+
+        double tPrev = 0.0;
+        for (size_t nDepth : {250u, 500u, 1000u}) {
+            CCoinsView baseView;
+            CCoinsViewCache coins(&baseView);
+
+            auto mkName = [&](size_t i) { return padName(i); };
+
+            // root seed coin (non-P2AH) holding R_0
+            CScript rootScript = GetScriptForDestination(
+                DecodeDestination(GetParams().GlobalBurnAddress()));
+            {
+                // The seed root supplies the FIRST requirement; each pending
+                // then propagates the NEXT name via its held token.
+                CAssetTransfer tr(mkName(1), 1);
+                tr.ConstructTransaction(rootScript);
+            }
+            COutPoint rootOp(uint256S("1111111111111111111111111111111111111111111111111111111111111111"), 0);
+            coins.AddCoin(rootOp, Coin(CTxOut(0, rootScript), 100, 0), true);
+
+            std::vector<CAssetAuthPreimage> pres;
+            pres.reserve(nDepth);
+            for (size_t i = 1; i <= nDepth; i++) {
+                pres.push_back(MakePreimage(1, {mkName(i)}));
+                CScript sc;
+                pres.back().ConstructTransaction(sc);
+                CAssetTransfer tr(mkName(i + 1), 1); // token HELD at this output
+                tr.ConstructTransaction(sc);
+                COutPoint op(ArithToUint256(UintToArith256(
+                    uint256S("2222222222222222222222222222222222222222222222222222222222222222")) +
+                    arith_uint256(i)), 0);
+                coins.AddCoin(op, Coin(CTxOut(0, sc), 100, 0), true);
+            }
+
+            CMutableTransaction mutTx;
+            CTxIn rootIn; rootIn.prevout = rootOp;
+            mutTx.vin.push_back(rootIn);
+            for (size_t i = 1; i <= nDepth; i++) {
+                CTxIn in;
+                in.prevout = COutPoint(ArithToUint256(UintToArith256(
+                    uint256S("2222222222222222222222222222222222222222222222222222222222222222")) +
+                    arith_uint256(i)), 0);
+                CScript sig;
+                CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+                ss << pres[i - 1];
+                sig << std::vector<unsigned char>(ss.begin(), ss.end());
+                in.scriptSig = sig;
+                mutTx.vin.push_back(in);
+            }
+            CTransaction tx(mutTx);
+
+            auto t0 = std::chrono::steady_clock::now();
+            std::string err;
+            std::vector<CAssetAuthInputInfo> vInfo;
+            bool ok = CheckTxAssetAuthInputs(tx, coins, err, &vInfo);
+            auto ms = std::chrono::duration<double, std::milli>(
+                          std::chrono::steady_clock::now() - t0).count();
+
+            BOOST_CHECK_MESSAGE(ok, "deep chain must authorize: " + err);
+            BOOST_TEST_MESSAGE("worklist depth=" << nDepth << " elapsed=" << ms << "ms");
+            if (tPrev > 0)
+                BOOST_WARN_MESSAGE(ms < tPrev * 12.0,
+                                   "scaling looks worse than linear-ish: " << tPrev << "ms -> " << ms << "ms");
+            tPrev = std::max(ms, 0.05);
+        }
     }
 
 BOOST_AUTO_TEST_SUITE_END()

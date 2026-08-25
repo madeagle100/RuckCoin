@@ -458,6 +458,10 @@ bool GlobalAssetNullDataFromScript(const CScript& scriptPubKey, CNullAssetTxData
 //! Pay-to-asset-hash (P2AH) helpers
 //! Parse the preimage revealed in a P2AH input's scriptSig (must be a single push)
 bool AssetAuthPreimageFromScriptSig(const CScript& scriptSig, CAssetAuthPreimage& preimage);
+/** Bounded structural pre-scan of a serialized preimage payload (no allocations) */
+bool AssetAuthPreimageFramingValid(const std::vector<unsigned char>& vchPreimage, std::string& strError);
+/** Strict (framing + semantic + canonical-form) preimage decoder shared by all ingress paths */
+bool AssetAuthPreimageStrictFromRaw(const std::vector<unsigned char>& vchPreimage, CAssetAuthPreimage& preimage, std::string& strError);
 //! Extract the committed preimage hash from a P2AH scriptPubKey
 bool AssetAuthHashFromScript(const CScript& scriptPubKey, uint160& hashRet);
 

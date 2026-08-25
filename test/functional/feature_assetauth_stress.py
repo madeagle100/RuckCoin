@@ -43,6 +43,22 @@ def truncate(number, digits=8):
     return math.trunc(stepper * number) / stepper
 
 
+def _assert_safe_reset_path(persistent_dir):
+    """F-10: canonicalize through realpath so symlink/alias paths cannot bypass
+    protection, then refuse deletion of dangerous targets."""
+    _target = os.path.realpath(persistent_dir)
+    _home = os.path.realpath(os.path.expanduser("~"))
+    # <repo>/test/functional/<file> -> three levels up is the repository root
+    _repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    _protected = {os.path.realpath(os.sep), _home, _repo_root}
+    if (_target in _protected
+            or any(_target.startswith(p + os.sep) for p in _protected)):
+        raise RuntimeError(
+            "Refusing to reset persistent dir %r: resolves to protected path %r"
+            % (persistent_dir, _target))
+    return _target
+
+
 class AssetAuthStressTest(RavenTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
@@ -68,8 +84,9 @@ class AssetAuthStressTest(RavenTestFramework):
         if self.persistent_dir:
             self.persistent_dir = os.path.abspath(self.persistent_dir)
             if getattr(self.options, "reset_chain", False) and os.path.isdir(self.persistent_dir):
+                _target = _assert_safe_reset_path(self.persistent_dir)
                 self.log.info("Resetting persistent chain at %s" % self.persistent_dir)
-                shutil.rmtree(self.persistent_dir)
+                shutil.rmtree(_target)
             os.makedirs(self.persistent_dir, exist_ok=True)
             self.options.tmpdir = self.persistent_dir
             self.options.nocleanup = True

@@ -173,11 +173,9 @@ public:
             std::vector<unsigned char> vchPreimage;
             if (pwallet->GetAssetAuthPreimage(assetAuthID, vchPreimage)) {
                 CAssetAuthPreimage preimage;
-                CDataStream ssPreimage(vchPreimage, SER_NETWORK, PROTOCOL_VERSION);
-                try {
-                    ssPreimage >> preimage;
-                } catch (const std::exception&) {
-                    return obj; // Stored preimage failed to deserialize; report nothing extra
+                std::string strStrictError;
+                if (!AssetAuthPreimageStrictFromRaw(vchPreimage, preimage, strStrictError)) {
+                    return obj; // Stored preimage failed strict validation; report nothing extra
                 }
                 obj.push_back(Pair("preimage", HexStr(vchPreimage)));
                 obj.push_back(Pair("sigsrequired", preimage.nRequired));
@@ -683,6 +681,10 @@ bool getAddressFromIndex(const int &type, const uint160 &hash, std::string &addr
         address = CRavenAddress(CScriptID(hash)).ToString();
     } else if (type == 1) {
         address = CRavenAddress(CKeyID(hash)).ToString();
+    } else if (type == 3) {
+        /** RVN START */
+        address = CRavenAddress(CAssetAuthID(hash)).ToString();
+        /** RVN END */
     } else {
         return false;
     }

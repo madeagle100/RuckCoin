@@ -65,6 +65,10 @@ void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry, 
                         in.pushKV("address", CRavenAddress(CKeyID(spentInfo.addressHash)).ToString());
                     } else if (spentInfo.addressType == 2) {
                         in.pushKV("address", CRavenAddress(CScriptID(spentInfo.addressHash)).ToString());
+                    } else if (spentInfo.addressType == 3) {
+                        /** RVN START */
+                        in.pushKV("address", CRavenAddress(CAssetAuthID(spentInfo.addressHash)).ToString());
+                        /** RVN END */
                     }
                 }
                 newVin.push_back(in);
@@ -1388,7 +1392,11 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
 
                     // tagging
                     for (int i = 0; i < (int)addresses.size(); i++) {
-                        CScript tag_string_script = GetScriptForNullAssetDataDestination(DecodeDestination(addresses[i].get_str()));
+                        CTxDestination tag_dest = DecodeDestination(addresses[i].get_str());
+                        if (tag_dest.type() == typeid(CAssetAuthID))
+                            throw JSONRPCError(RPC_INVALID_PARAMETER,
+                                "P2AH (asset-auth) addresses cannot be used for qualifier tags or per-address restrictions");
+                        CScript tag_string_script = GetScriptForNullAssetDataDestination(tag_dest);
                         CNullAssetTxData tagString(strQualifier, tag_op);
                         tagString.ConstructTransaction(tag_string_script);
                         CTxOut out_tag(0, tag_string_script);
@@ -1425,7 +1433,11 @@ UniValue createrawtransaction(const JSONRPCRequest& request)
 
                     // freezing
                     for (int i = 0; i < (int)addresses.size(); i++) {
-                        CScript freeze_string_script = GetScriptForNullAssetDataDestination(DecodeDestination(addresses[i].get_str()));
+                        CTxDestination freeze_dest = DecodeDestination(addresses[i].get_str());
+                        if (freeze_dest.type() == typeid(CAssetAuthID))
+                            throw JSONRPCError(RPC_INVALID_PARAMETER,
+                                "P2AH (asset-auth) addresses cannot be used for qualifier tags or per-address restrictions");
+                        CScript freeze_string_script = GetScriptForNullAssetDataDestination(freeze_dest);
                         CNullAssetTxData freezeString(strAssetName, freeze_op);
                         freezeString.ConstructTransaction(freeze_string_script);
                         CTxOut out_freeze(0, freeze_string_script);
@@ -1977,6 +1989,11 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
                 UniValue v = find_value(prevOut, "assetAuthPreimage");
                 if (!v.isNull()) {
                     std::vector<unsigned char> preimageData(ParseHexV(v, "assetAuthPreimage"));
+                    CAssetAuthPreimage checkPreimage;
+                    std::string strStrictError;
+                    if (!AssetAuthPreimageStrictFromRaw(preimageData, checkPreimage, strStrictError))
+                        throw JSONRPCError(RPC_INVALID_PARAMETER,
+                            strprintf("assetAuthPreimage failed strict validation: %s", strStrictError));
                     tempKeystore.AddAssetAuthPreimage(preimageData);
 #ifdef ENABLE_WALLET
                     // When signing with the wallet, the preimage needs to be visible to the
@@ -2016,6 +2033,22 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
 
     bool fHashSingle = ((nHashType & ~SIGHASH_ANYONECANPAY) == SIGHASH_SINGLE);
 
+    /** RVN START - F-08: consensus requires exact SIGHASH_ALL on every signature
+     *  of a transaction that spends any P2AH input. Enforce that at the RPC
+     *  boundary and during the completion verification instead of returning a
+     *  "complete" transaction that consensus will reject. */
+    bool fHasP2AHPrevout = false;
+    for (unsigned int i = 0; i < mtx.vin.size(); i++) {
+        if (view.AccessCoin(mtx.vin[i].prevout).out.scriptPubKey.IsAssetAuthScript()) {
+            fHasP2AHPrevout = true;
+            break;
+        }
+    }
+    if (fHasP2AHPrevout && nHashType != SIGHASH_ALL)
+        throw JSONRPCError(RPC_INVALID_PARAMETER,
+                           "P2AH (pay-to-asset-hash) inputs require SIGHASH_ALL signatures");
+    /** RVN END */
+
     // Script verification errors
     UniValue vErrors(UniValue::VARR);
 
@@ -2042,7 +2075,12 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
         UpdateTransaction(mtx, i, sigdata);
 
         ScriptError serror = SCRIPT_ERR_OK;
-        if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&txConst, i, amount), &serror)) {
+        unsigned int nCompleteFlags = STANDARD_SCRIPT_VERIFY_FLAGS;
+        /** RVN START - F-08 */
+        if (fHasP2AHPrevout)
+            nCompleteFlags |= SCRIPT_VERIFY_REQUIRE_SIGHASH_ALL;
+        /** RVN END */
+        if (!VerifyScript(txin.scriptSig, prevPubKey, &txin.scriptWitness, nCompleteFlags, TransactionSignatureChecker(&txConst, i, amount), &serror)) {
             if (serror == SCRIPT_ERR_INVALID_STACK_OPERATION) {
                 // Unable to sign input and verification failed (possible attempt to partially sign).
                 TxInErrorToJSON(txin, vErrors, "Unable to sign input, invalid stack size (possibly missing key)");
