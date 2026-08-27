@@ -16,14 +16,12 @@ class AssetMempoolTest(RavenTestFramework):
 
 
     def activate_assets(self):
-        self.log.info("Generating RVN and activating assets...")
+        self.log.info("Mining mature coinbase (assets are active from genesis)...")
         n0, n1 = self.nodes[0], self.nodes[1]
 
-        n0.generate(1)
+        n0.generate(101)
         self.sync_all()
-        n0.generate(216)
-        self.sync_all()
-        n1.generate(216)
+        n1.generate(101)
         self.sync_all()
         assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['assets']['status'])
 

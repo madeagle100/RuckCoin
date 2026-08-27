@@ -34,6 +34,10 @@ const struct VBDeploymentInfo VersionBitsDeploymentInfo[Consensus::MAX_VERSION_B
     {
             /*.name =*/ "coinbase",
             /*.gbt_force =*/ true,
+    },
+    {
+            /*.name =*/ "assetauth",
+            /*.gbt_force =*/ true,
     }
 };
 
@@ -43,6 +47,11 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     int nThreshold = Threshold(params);
     int64_t nTimeStart = BeginTime(params);
     int64_t nTimeTimeout = EndTime(params);
+
+    // RuckCoin genesis has not shipped: asset/P2AH rules are consensus from block 1.
+    if (nTimeStart == Consensus::BIP9Deployment::ALWAYS_ACTIVE) {
+        return THRESHOLD_ACTIVE;
+    }
 
     // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
     if (pindexPrev != nullptr) {
@@ -153,6 +162,10 @@ BIP9Stats AbstractThresholdConditionChecker::GetStateStatisticsFor(const CBlockI
 
 int AbstractThresholdConditionChecker::GetStateSinceHeightFor(const CBlockIndex* pindexPrev, const Consensus::Params& params, ThresholdConditionCache& cache) const
 {
+    if (BeginTime(params) == Consensus::BIP9Deployment::ALWAYS_ACTIVE) {
+        return 0;
+    }
+
     const ThresholdState initialState = GetStateFor(pindexPrev, params, cache);
 
     // BIP 9 about state DEFINED: "The genesis block is by definition in this state for each deployment."

@@ -8,6 +8,7 @@
 #define RAVEN_CONSENSUS_PARAMS_H
 
 #include "uint256.h"
+#include <limits>
 #include <map>
 #include <string>
 
@@ -21,6 +22,7 @@ enum DeploymentPos
     DEPLOYMENT_TRANSFER_SCRIPT_SIZE,
     DEPLOYMENT_ENFORCE_VALUE,
     DEPLOYMENT_COINBASE_ASSETS,
+    DEPLOYMENT_P2AH, // Deployment of pay-to-asset-hash (P2AH)
     // DEPLOYMENT_CSV, // Deployment of BIP68, BIP112, and BIP113.
 //    DEPLOYMENT_SEGWIT, // Deployment of BIP141, BIP143, and BIP147.
     // NOTE: Also add new deployments to VersionBitsDeploymentInfo in versionbits.cpp
@@ -41,6 +43,10 @@ struct BIP9Deployment {
     uint32_t nOverrideMinerConfirmationWindow;
     /** Use to override the the activation threshold on a specific BIP */
     uint32_t nOverrideRuleChangeActivationThreshold;
+    /** Timeout far in the future (never expires). */
+    static constexpr int64_t NO_TIMEOUT = std::numeric_limits<int64_t>::max();
+    /** nStartTime value: the deployment is active from genesis (no BIP9 wait). */
+    static constexpr int64_t ALWAYS_ACTIVE = -1;
 };
 
 /**

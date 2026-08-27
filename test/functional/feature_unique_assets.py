@@ -37,9 +37,9 @@ class UniqueAssetTest(RavenTestFramework):
         self.extra_args = [['-assetindex'], ['-assetindex'], ['-assetindex']]
 
     def activate_assets(self):
-        self.log.info("Generating RVN for node[0] and activating assets...")
+        self.log.info("Mining mature coinbase (assets are active from genesis)...")
         n0 = self.nodes[0]
-        n0.generate(432)
+        n0.generate(101)
         self.sync_all()
         assert_equal("active", n0.getblockchaininfo()['bip9_softforks']['assets']['status'])
 

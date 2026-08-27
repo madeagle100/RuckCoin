@@ -19,8 +19,8 @@ class ListMyAssetsTest(RavenTestFramework):
            These shouldn't be returned by listmyassets.
         """
 
-        # activate assets
-        self.nodes[0].generate(500)
+        # assets are active from genesis; mine mature coinbase
+        self.nodes[0].generate(101)
         self.sync_all()
 
         assert_equal(0, len(self.nodes[0].listmyassets()))

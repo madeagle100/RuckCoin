@@ -56,8 +56,8 @@ class MaxReorgTest(RavenTestFramework):
         adversary = self.nodes[0]
         subject = self.nodes[-1]
 
-        # enough to activate assets
-        start = 432
+        # assets are active from genesis; mine enough mature coinbase
+        start = 102
 
         self.log.info(f"Setting all node times to {tip_age} seconds ago...")
         now = int(round(time.time()))

@@ -353,6 +353,32 @@ bool CScript::IsNullAssetVerifierTxDataScript() const
             (*this)[1] == OP_RESERVED &&
             (*this)[2] != OP_RESERVED);
 }
+
+bool CScript::IsPayToAssetAuthHash() const
+{
+    // Extra-fast test for pay-to-asset-hash (P2AH) CScripts:
+    // The base script is exactly 25 bytes so that asset transfer data can be
+    // appended after it the same way it is appended to P2PKH scripts (the
+    // asset parsing code expects OP_RVN_ASSET at index 25).
+    return (this->size() == 25 &&
+            (*this)[0] == OP_DUP &&
+            (*this)[1] == OP_HASH160 &&
+            (*this)[2] == 0x14 &&
+            (*this)[23] == OP_EQUAL &&
+            (*this)[24] == OP_NIP);
+}
+
+bool CScript::IsAssetAuthScript() const
+{
+    // A P2AH script with or without asset transfer data appended after the
+    // 25 byte base script
+    return (this->size() >= 25 &&
+            (*this)[0] == OP_DUP &&
+            (*this)[1] == OP_HASH160 &&
+            (*this)[2] == 0x14 &&
+            (*this)[23] == OP_EQUAL &&
+            (*this)[24] == OP_NIP);
+}
 /** RVN END */
 
 bool CScript::IsPayToWitnessScriptHash() const

@@ -621,7 +621,7 @@ void ClearDatadirCache()
 fs::path GetConfigFile(const std::string &confPath)
 {
     fs::path pathConfigFile(confPath);
-    if (!pathConfigFile.is_complete())
+    if (!pathConfigFile.is_absolute())
         pathConfigFile = GetDataDir(false) / pathConfigFile;
 
     // Default name is ruck.conf. Fall back to a leftover raven.conf in the
@@ -666,7 +666,7 @@ void ArgsManager::ReadConfigFile(const std::string &confPath)
 fs::path GetPidFile()
 {
     fs::path pathPidFile(gArgs.GetArg("-pid", RAVEN_PID_FILENAME));
-    if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
+    if (!pathPidFile.is_absolute()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
 }
 
