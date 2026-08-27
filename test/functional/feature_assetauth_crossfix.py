@@ -14,7 +14,8 @@ class CrossFixTest(RavenTestFramework):
 
     def activate(self):
         n0 = self.nodes[0]
-        n0.generate(432)
+        # RuckCoin: assets/P2AH are genesis-active; mine 101 for coinbase maturity only.
+        n0.generate(101)
         self.sync_all()
         info = n0.getblockchaininfo()
         assert_equal("active", info['bip9_softforks']['assets']['status'])
@@ -29,6 +30,10 @@ class CrossFixTest(RavenTestFramework):
     # identical across process restart (no sticky history), and reconsidering
     # must restore enforcement.
     def t_activation_determinism(self):
+        assetauth = self.nodes[0].getblockchaininfo()['bip9_softforks']['assetauth']
+        if assetauth.get('startTime') == -1:
+            self.log.info("Skipping F-01/F-02 pre-activation test (genesis-active chain)")
+            return
         # Single-node scope: propagation noise is irrelevant to the
         # history-dependence assertion being made here.
         n0 = self.nodes[0]
